@@ -1,3 +1,6 @@
+import { devMode } from "./devMode.js"
+
+
 document.addEventListener('DOMContentLoaded', () => {
     
     const loginButton = document.getElementById('login-button');
@@ -8,6 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_URL = 'http://localhost:3333/auth';
 
     const handleLogin = async () => {
+
+        if (devMode) {
+            console.warn("Modo Dev: Pulando autenticação...")
+            localStorage.setItem('token', 'token-falso-de-teste')
+            localStorage.setItem('userName', 'Desenvolvedor')
+            window.location.href = '/public/pages/home.html'
+            return 
+        }
+
         errorMessage.classList.remove('active');
         errorMessage.textContent = '';
         loginButton.disabled = true;
