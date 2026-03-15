@@ -22,13 +22,13 @@
                     <img src="../imagens/Logo.png" alt="Trip Now Logo">
                 </a>
             </div>
-
-            <nav class="main-nav">
-                <a href="/public/pages/home.html" class="active">Roteiros</a>
-                <a href="/public/pages/escolherdest.html">Criar</a>
-                <a href="#">Comunidade</a>
-            </nav>
-
+            <button class="menuhbg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            </button>
             <div class="header-actions">
                 <div class="profile-dropdown-container">
                     <div class="profile-icon" id="profile-menu-trigger">
@@ -52,7 +52,10 @@
 
     <section class="hero-section-wrapper">
         <div class="container hero-container">
-
+            <div class="saudacao">
+                <p>Olá viajante!👋</p>
+                <h1>Onde vamos hoje?</h1>
+            </div>
             <div class="hero-card">
                 <h1>Sua Aventura <br>Começa Aqui</h1>
                 <p>Crie itinerários de viagem personalizados em minutos. Descubra destinos incríveis e planeje sua
@@ -63,15 +66,18 @@
                 </a>
             </div>
 
-            <div class="hero-image-container">
+            <!-- <div class="hero-image-container">
                 <img src="../imagens/photo-16.jpg" alt="Avião no pôr do sol">
-            </div>
+            </div> -->
 
         </div>
     </section>
 
     <main class="container my-routes-section">
-        <h2>Meu Roteiros</h2>
+        <div class="routes-section-header">
+            <h2>Meu Roteiros</h2>
+            <a href="#">Ver todos ➡</a>
+        </div>
 
         <div id="my-routes-container" class="route-card-grid">
             <p style="text-align: center; color: #666; width: 100%; padding: 20px;">Carregando seus roteiros...</p>

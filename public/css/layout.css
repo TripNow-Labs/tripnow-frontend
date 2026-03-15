@@ -33,6 +33,13 @@ body {
 }
 
 /* --- Header --- */
+.menuhbg {
+    /* display: none; */
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
 .main-header {
     background-color: var(--white);
     padding: 15px 0;
@@ -42,12 +49,19 @@ body {
 
 .header-container {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
+    gap: 10px;
+}
+
+.header-container :last-child{
+    margin-left: auto;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo img {
-    height: 50px;
+    height: 30px;
 }
 
 .main-nav {
@@ -73,17 +87,19 @@ body {
 }
 
 .profile-icon {
-    width: 45px;
-    height: 45px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: 2px solid var(--primary-color);
     color: var(--text-dark);
     display: flex;
     justify-content: center;
-    align-items: center;
-    font-size: 1.2rem;
+    align-items:center;
+    font-size: 1rem;
     cursor: pointer;
     background: transparent;
+    padding-right: 6px;
+    
 }
 
 .profile-icon:hover {
