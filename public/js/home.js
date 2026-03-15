@@ -41,35 +41,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
 
         roteiros.forEach(roteiro => {
-            const card = document.createElement('article');
-            card.className = 'route-card';
+    const card = document.createElement('a');
+    card.className = 'route-card';
+    card.href = `/public/pages/roteiro-diario.html?id=${roteiro.id}`;
 
-            // Formatação de Dados
-            const dataInicio = new Date(roteiro.data_inicio).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
-            const imagemCidade = roteiro.cidade?.url_imagem || 'https://via.placeholder.com/400x200?text=Sem+Imagem';
-            const nomeCidade = roteiro.cidade?.nome || 'Cidade Desconhecida';
-            const nomePais = roteiro.cidade?.pais?.nome || '';
-            // Tenta contar atividades (se o backend mandar esse dado, senão mostra "?")
-            // Como o endpoint getAll atual não manda contagem, deixamos genérico ou removemos
-            const atividadesTexto = "Ver detalhes";
+    const imagemCidade = roteiro.cidade?.url_imagem || 'https://via.placeholder.com/400x250?text=Viagem';
+    const nomeCidade = roteiro.cidade?.nome || 'Cidade';
+    const nomePais = roteiro.cidade?.pais?.nome || '';
+    const duracao = roteiro.duracao_dias;
 
-            card.innerHTML = `
-                <div class="route-image">
-                    <img src="${imagemCidade}" alt="${nomeCidade}">
-                    <div class="image-text">
-                        <p>${nomeCidade}, ${nomePais}</p>
-                    </div>
-                </div>
-                <div class="route-details">
-                    <p class="route-info">
-                        <i class="fas fa-calendar-alt"></i> Início: ${dataInicio} <br>
-                        <i class="fas fa-clock"></i> ${roteiro.duracao_dias} dias
-                    </p>
-                    <a href="/public/pages/roteiro-diario.html?id=${roteiro.id}" class="btn btn-tertiary">Ver Roteiro</a>
-                </div>
-            `;
-            fragment.appendChild(card);
-        });
+    card.innerHTML = `
+        <img src="${imagemCidade}" alt="${nomeCidade}" class="card-bg-image">
+        
+        <span class="card-days-badge">${duracao} dias</span>
+
+        <div class="card-overlay">
+            <div class="card-content-minimal">
+                <p class="card-location-line">${nomeCidade}, ${nomePais}</p>
+                <h3 class="card-city-highlight">${nomeCidade}</h3>
+            </div>
+        </div>
+    `;
+    fragment.appendChild(card);
+});
 
         routesContainer.appendChild(fragment);
     }
