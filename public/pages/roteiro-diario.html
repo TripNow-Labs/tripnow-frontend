@@ -20,40 +20,7 @@
 
 <body>
     <!-- Header -->
-    <header class="main-header">
-        <div class="container header-container">
-            <div class="logo">
-                <a href="/public/pages/home.html">
-                    <img src="../imagens/Logo.png" alt="Trip Now Logo">
-                </a>
-            </div>
-
-            <nav class="main-nav">
-                <a href="/public/pages/home.html">Roteiros</a>
-                <a href="/public/pages/escolherdest.html">Criar</a>
-                <a href="#">Comunidade</a>
-            </nav>
-
-            <div class="header-actions">
-                <div class="profile-dropdown-container">
-                    <div class="profile-icon" id="profile-menu-trigger">
-                        <i class="far fa-user"></i>
-                    </div>
-                    <div class="dropdown-menu" id="profile-dropdown">
-                        <div class="dropdown-header">
-                            <p id="user-greeting">Olá, Viajante!</p>
-                        </div>
-                        <a href="/public/pages/perfil.html" class="dropdown-item">
-                            <i class="fas fa-user-circle"></i> Meu Perfil
-                        </a>
-                        <a href="#" id="logout-btn" class="dropdown-item logout">
-                            <i class="fas fa-sign-out-alt"></i> Sair
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <trip-header></trip-header>
 
     <!-- Breadcrumb -->
     <div class="breadcrumb-container">
@@ -261,21 +228,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#" class="footer-link">Sobre nós</a>
-                    <a href="#" class="footer-link">Termos</a>
-                    <a href="#" class="footer-link">Privacidade</a>
-                    <a href="#" class="footer-link">Contato</a>
-                </div>
-                <div class="footer-text">
-                    &copy; 2025 Trip Now. Todos os direitos reservados.
-                </div>
-            </div>
-        </div>
-    </footer>
+    <trip-footer></trip-footer>
 
     <!-- Modal de Atividade -->
     <div class="modal" id="activityModal">
@@ -315,6 +268,8 @@
     <!-- JavaScript -->
     <script src="../js/layout.js"></script>
     <script src="../js/roteiro_do_dia.js"></script>
+    <script src="../js/components/tripHeader.js"></script> <!-- import do component header -->
+    <script src="../js/components/tripFooter.js"></script> <!-- import do component footer -->
 </body>
 
 </html>
