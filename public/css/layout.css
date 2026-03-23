@@ -34,24 +34,31 @@ body {
 
 /* --- Header --- */
 .menuhbg {
-    /* display: none; */
     background: none;
     border: none;
     cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    color: var(--text-dark);
+    transition: color 0.2s;
+}
+
+.menuhbg:hover {
+    color: var(--primary-color);
 }
 
 .main-header {
     background-color: var(--white);
-    padding: 15px 0;
+    padding: 10px 0;
     border-bottom: 1px solid var(--border);
     /* Adicionado para consistência em outras páginas */
 }
 
 .header-container {
     display: flex;
-    /* justify-content: space-between; */
+    justify-content: space-between; 
     align-items: center;
-    gap: 10px;
 }
 
 .header-container :last-child{
@@ -61,7 +68,7 @@ body {
 }
 
 .logo img {
-    height: 30px;
+    height: 40px;
 }
 
 .main-nav {
@@ -84,6 +91,9 @@ body {
 /* Ícone de Perfil */
 .profile-dropdown-container {
     position: relative;
+    margin-left: auto; 
+    display: flex;
+    align-items: center;
 }
 
 .profile-icon {
@@ -110,18 +120,20 @@ body {
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 120%;
-    right: 0;
+    top: 100%; /* Logo abaixo do botão */
+    right: 0;   /* Alinhado à direita do botão */
     width: 200px;
     background: white;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    margin-top: 10px; /* Distância do botão */
 }
 
 .dropdown-menu.show {
     display: block;
+    animation: fadeIn 0.2s ease-out;
 }
 
 .dropdown-header {
@@ -130,6 +142,11 @@ body {
     border-bottom: 1px solid #eee;
     font-weight: bold;
     font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .dropdown-item {
@@ -195,7 +212,7 @@ body {
     }
 
     .footer-links {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        gap: 25px;
     }
 }
