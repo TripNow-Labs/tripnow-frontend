@@ -78,15 +78,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 const roteiros = await response.json();
-                loadHistory(roteiros);
-            } else {
-                loadHistory([]); // Se der erro ou 404, mostra vazio
+                // ATUALIZA APENAS O CONTADOR DE ROTEIROS
+            const countRoteirosEl = document.getElementById('count-roteiros');
+            if (countRoteirosEl) {
+                // Pega a quantidade de itens no array retornado pelo banco
+                countRoteirosEl.textContent = roteiros.length; 
             }
-        } catch (error) {
-            console.error("Erro roteiros:", error);
-            loadHistory([]);
+
+            // Mantém o carregamento da lista visual no histórico
+            loadHistory(roteiros);
+        } else {
+            loadHistory([]); 
         }
+    } catch (error) {
+        console.error("Erro ao buscar roteiros:", error);
+        loadHistory([]);
     }
+}
 
     function loadProfileInfo(data) {
         const userNameElement = document.getElementById('user-profile-name');
@@ -241,7 +249,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (input) {
                     payload[dbField] = input.value; // ex: payload.biografia = valor do input 'bio'
                 }
-            }
+            }    
+                if (base64Photo) {
+                    payload.url_foto_perfil = base64Photo; // Nome da coluna no seu UserController.js
+                }
+            
 
             try {
                 // 2. Envia para a API
@@ -277,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cameraIcon = document.querySelector('.camera-icon');
     const fileUploadInput = document.getElementById('file-upload-input');
     const profilePicImg = document.getElementById('user-profile-pic');
+    let base64Photo = null; // Variável global para guardar a nova foto
 
     if (cameraIcon && fileUploadInput) {
         cameraIcon.addEventListener('click', () => fileUploadInput.click());
@@ -287,13 +300,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Pré-visualização imediata
             const reader = new FileReader();
-            reader.onload = (ev) => { if(profilePicImg) profilePicImg.src = ev.target.result; };
-            reader.readAsDataURL(file);
+        reader.onload = (ev) => { 
+            if(profilePicImg) profilePicImg.src = ev.target.result; 
+            base64Photo = ev.target.result; // Salva o código da imagem
+            alert("Clique em 'Salvar Alterações' para confirmar a nova foto.");
+        };
+
+        reader.readAsDataURL(file);
 
             // [TODO] Implementar upload real da imagem para o servidor aqui
             // Por enquanto, como a API espera URL de texto, não podemos enviar o arquivo binário direto no PUT JSON.
             // Seria necessário uma rota de upload separada ou conversão Base64.
-            alert("Imagem selecionada visualmente. Implementar rota de upload de arquivos no backend para persistir.");
+            //alert("Imagem selecionada visualmente. Implementar rota de upload de arquivos no backend para persistir.");
         });
     }
 
