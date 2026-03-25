@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeje seu Roteiro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/EscolherDestino [NOVO].css">
+</head>
+
+<body>
+
+    <trip-header></trip-header>
+
+    <main class="container">
+
+        <section id="planning-section">
+
+            <header class="setup-header">
+                <div class="title-group">
+                    <i class="fas fa-route header-icon"></i>
+                    <h1 class="main-title">Planeje seu Roteiro</h1>
+                </div>
+            </header>
+
+            <form id="basic-config-form" class="main-form">
+
+                <div class="form-group">
+                    <label for="roteiro-nome" class="form-label">Nome do Roteiro</label>
+                    <input type="text" id="roteiro-nome" placeholder="Ex: Minhas férias de verão" class="form-input">
+                </div>
+
+                <div class="form-row duration-group">
+                    <legend class="form-label">Duração da Viagem</legend>
+                    <div class="date-input-wrapper">
+                        <label for="data-inicio" class="sub-label">Data de Início</label>
+                        <input type="date" id="data-inicio" class="form-input" required>
+                    </div>
+                    <div class="date-input-wrapper">
+                        <label for="data-termino" class="sub-label">Data de Término</label>
+                        <input type="date" id="data-termino" class="form-input" required>
+                    </div>
+                </div>
+
+                <section class="destination-selector">
+                    <h2 class="section-title">Escolha seu destino</h2>
+                    <p class="section-subtitle">Selecione a cidade para onde você quer viajar</p>
+
+                    <div class="category-filters">
+                        <button type="button" class="filter-pill active">Popular</button>
+                        <button type="button" class="filter-pill">Praia</button>
+                        <button type="button" class="filter-pill">Europa</button>
+                        <button type="button" class="filter-pill">América</button>
+                    </div>
+
+                    <div class="search-input-container">
+                        <i class="fas fa-search search-icon-input"></i>
+                        <input type="text" placeholder="Digite o nome da cidade..." class="city-search-input">
+                    </div>
+                </section>
+
+                <section class="popular-cities-section">
+                    <div class="section-header-row">
+                        <h3 class="subsection-title">Cidades Populares</h3>
+                        <a href="#" class="see-all-link">Ver todas</a>
+                    </div>
+
+                    <div class="city-cards-grid" id="containerCards">
+                        </div>
+                </section>
+
+            </form>
+        </section>
+
+    </main>
+
+    <trip-footer></trip-footer>
+
+    <script src="../js/layout.js"></script>
+    <script src="../js/components/tripHeader.js"></script>
+    <script src="../js/components/tripFooter.js"></script>
+    <script src="../js/EscolherDestino [NOVO].js"></script>
+</body>
+
+</html>
