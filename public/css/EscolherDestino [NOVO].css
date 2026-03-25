@@ -1,0 +1,440 @@
+:root {
+    --primary-cyan: #00B4D8; /* Cor principal dos botões e destaques */
+    --text-dark: #333333;
+    --text-muted: #757575;
+    --bg-light: #FFFFFF;
+    --bg-pill-inactive: #F5F5F5;
+    --border-color: #E0E0E0;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-radius-lg: 16px;
+    --border-radius-md: 8px;
+    --border-radius-sm: 20px; /* Para as pills */
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #FAFAFA;
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+}
+
+/* Utilitários de visibilidade para o fluxo */
+.hidden-step {
+    display: none !important;
+}
+
+.active-step {
+    display: block !important;
+}
+
+/* Container principal com padding responsivo */
+.container {
+    width: 100%;
+    max-width: 600px; /* Limite para mobile/tablet portrait */
+    margin: 0 auto;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   ESTILOS COMPARTILHADOS DE FORMULÁRIO (Inputs, Labels)
+   ============================================================ */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    box-sizing: border-box;
+    background-color: var(--bg-light);
+}
+
+.form-input::placeholder {
+    color: #BDBDBD;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-cyan);
+}
+
+/* Row de datas (mobile: empilhado ou inputs menores lado a lado) */
+.form-row.duration-group {
+    border: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    display: flex;
+    flex-direction: column; /* Mobile-first: empilhado */
+    gap: 12px;
+}
+
+.form-row.duration-group legend {
+    padding: 0;
+    margin-bottom: 8px;
+}
+
+.date-input-wrapper {
+    flex: 1;
+}
+
+.sub-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+/* ============================================================
+   ETAPA 1: SELEÇÃO DE DESTINO (ESTILO IMAGEM)
+   ============================================================ */
+
+/* Header da Seção de Planejamento */
+.setup-header {
+    margin-bottom: 24px;
+}
+
+.title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-icon {
+    font-size: 20px;
+    color: var(--primary-cyan);
+}
+
+.main-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Subtítulos de seção */
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+
+.section-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 16px 0;
+}
+
+/* Filtros de Categoria (Pills) */
+.category-filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto; /* Permite scroll horizontal se houver muitas */
+    padding-bottom: 8px; /* Espaço para o scrollbar */
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+}
+
+/* Esconde scrollbar em Webkit */
+.category-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-pill {
+    flex: 0 0 auto;
+    padding: 8px 16px;
+    background-color: var(--bg-pill-inactive);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-pill.active {
+    background-color: var(--primary-cyan);
+    border-color: var(--primary-cyan);
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+/* Barra de Busca */
+.search-input-container {
+    position: relative;
+    margin-bottom: 32px;
+}
+
+.search-icon-input {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #BDBDBD;
+    font-size: 16px;
+}
+
+.city-search-input {
+    width: 100%;
+    padding: 14px 16px 14px 44px; /* Padding extra à esquerda para o ícone */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg); /* Mais arredondado como na imagem */
+    background-color: var(--bg-light);
+}
+
+/* Grid de Cidades Populares e Link "Ver todas" */
+.popular-cities-section {
+    margin-top: 32px;
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.subsection-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.see-all-link {
+    font-size: 14px;
+    color: var(--primary-cyan);
+    text-decoration: none;
+    font-weight: 400;
+}
+
+/* Grid de Cards (Mobile-first: 1 coluna) */
+.city-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* ============================================================
+   ESTILO DOS CARDS DINÂMICOS (Fiel à Imagem do Rio/Paris)
+   ============================================================ */
+.city-card {
+    background-color: var(--bg-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden; /* Garante que a imagem respeite o border-radius */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 180px; /* Altura fixa para mobile */
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Importante para não distorcer */
+}
+
+/* Tags de País (Brasil, França) no topo direito */
+.country-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: rgba(51, 51, 51, 0.8); /* Fundo escuro translúcido */
+    color: #FFFFFF;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Info de Custo no canto inferior esquerdo da imagem */
+.cost-info {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    color: #FFFFFF;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Melhora legibilidade */
+}
+
+/* Conteúdo de Texto do Card */
+.card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-city-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.card-city-description {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin: 0 0 16px 0;
+    flex-grow: 1; /* Empurra o botão para baixo */
+}
+
+/* Botão de Ação do Card ("Selecionar este Destino") */
+.select-destination-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-cyan);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.select-destination-btn:hover {
+    background-color: #0096B4;
+}
+
+/* ============================================================
+   ETAPA 2: DETALHES ADICIONAIS (ESTILOS REAPROVEITADOS)
+   ============================================================ */
+
+/* Estilos para o Hero Dinâmico */
+.destination-hero {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+}
+
+.hero-content {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    color: #FFFFFF;
+    z-index: 1;
+}
+
+.hero-title { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; }
+.destination-description { font-size: 14px; margin: 0; line-height: 1.4; opacity: 0.9; }
+
+/* Grid de Horários */
+.time-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas no mobile */
+    gap: 10px;
+}
+
+.time-btn {
+    display: block;
+    padding: 12px;
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.hidden-radio:checked + .time-btn {
+    background-color: var(--primary-cyan);
+    color: #FFFFFF;
+    border-color: var(--primary-cyan);
+    font-weight: 700;
+}
+
+/* Input de Orçamento com Prefixo R$ */
+.input-with-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-prefix {
+    position: absolute;
+    left: 16px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.input-with-prefix {
+    padding-left: 45px; /* Espaço para o "R$" */
+}
+
+/* Botão de Finalizar */
+.finalize-btn {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--primary-cyan);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 24px;
+    cursor: pointer;
+}
+
+/* ============================================================
+   RESPONSIVIDADE (Tablets e Desktops Básicos)
+   ============================================================ */
+@media (min-width: 480px) {
+    /* Ajuste de datas para ficarem lado a lado em telas ligeiramente maiores */
+    .form-row.duration-group {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 960px; /* Largura maior para desktop */
+        padding: 32px;
+    }
+
+    /* Grid de cards com 2 colunas em desktop */
+    .city-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Grid de horários com 4 colunas em desktop */
+    .time-options-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
