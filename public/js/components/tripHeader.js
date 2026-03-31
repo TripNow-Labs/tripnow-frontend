@@ -56,7 +56,7 @@ class TripHeader extends HTMLElement {
         <header class="main-header">
             <div class="container">
                 <div class="logo">
-                    <a href="/public/pages/home.html"><img src="../imagens/Logo.png" alt="Trip Now Logo"></a>
+                    <a href="/public/pages/home.html"><img src="/public/logos/logo.jpeg" alt="Trip Now Logo"></a>
                 </div>
                 <div class="profile-dropdown-container">
                     <button class="menuhbg" id="trigger">
@@ -69,7 +69,7 @@ class TripHeader extends HTMLElement {
                         <a href="/public/pages/home.html" class="dropdown-item"><i class="fas fa-home"></i> Início</a>
                         <a href="/public/pages/escolherdest.html" class="dropdown-item"><i class="fas fa-plus-circle"></i> Criar Roteiro</a>
                         <a href="/public/pages/perfil.html" class="dropdown-item"><i class="fas fa-user-circle"></i> Meu Perfil</a>
-                        <a href="/public/pages/meus-roteiros.html" class="dropdown-item"><i class="fas fa-map-marked-alt"></i> Meus Roteiros</a>
+                        <a href="/public/pages/meusRoteiros.html" class="dropdown-item"><i class="fas fa-map-marked-alt"></i> Meus Roteiros</a>
                         <div class="dropdown-divider"></div>
                         <a href="#" class="dropdown-item logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
                     </div>

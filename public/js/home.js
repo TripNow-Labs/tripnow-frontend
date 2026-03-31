@@ -4,26 +4,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_ROTEIROS = 'http://localhost:3333/roteiros';
     const token = localStorage.getItem('token'); // Ainda precisa do token para o fetch
 
-    async function fetchMyRoutes() {
-        try {
-            const response = await fetch(API_ROTEIROS, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    const images = document.querySelectorAll('.hero-card-bg-carousel img');
+    let currentIndex = 0;
 
-            if (!response.ok) throw new Error('Erro ao buscar roteiros');
-
-            const roteiros = await response.json();
-            renderRoutes(roteiros);
-
-        } catch (error) {
-            console.error(error);
-            routesContainer.innerHTML = '<p style="text-align: center; color: #d32f2f;">Erro ao carregar roteiros. Tente novamente.</p>';
-        }
+    function nextImage() {
+        if (images.length === 0) return;
+        
+        // Remove a classe da imagem atual
+        images[currentIndex].classList.remove('active');
+        
+        // Calcula o próximo índice
+        currentIndex = (currentIndex + 1) % images.length;
+        
+        // Adiciona a classe na nova imagem
+        images[currentIndex].classList.add('active');
     }
+
+    // Inicia o intervalo de 5 segundos
+    if (images.length > 0) {
+        setInterval(nextImage, 5000);
+    }
+
+    async function fetchMyRoutes() {
+    try {
+        const response = await fetch(API_ROTEIROS, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error('Erro ao buscar roteiros');
+
+        const roteiros = await response.json();
+
+        // --- LÓGICA DE FILTRAGEM E LIMITE (ADAPTADA) ---
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const roteirosRelevantes = roteiros
+            .filter(r => {
+                const dataInicio = new Date(r.data_inicio);
+                dataInicio.setHours(0, 0, 0, 0);
+                // Retorna verdadeiro se a data for HOJE ou no FUTURO
+                return dataInicio >= hoje;
+            })
+            // Ordena os mais próximos primeiro (opcional, mas fica melhor na Home)
+            .sort((a, b) => new Date(a.data_inicio) - new Date(b.data_inicio))
+            // Pega apenas os primeiros 4 resultados
+            .slice(0, 4);
+
+        renderRoutes(roteirosRelevantes);
+
+    } catch (error) {
+        console.error(error);
+        routesContainer.innerHTML = '<p style="text-align: center; color: #d32f2f;">Erro ao carregar roteiros. Tente novamente.</p>';
+    }
+}
 
     function renderRoutes(roteiros) {
         routesContainer.innerHTML = '';
