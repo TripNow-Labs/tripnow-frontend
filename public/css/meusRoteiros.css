@@ -1,0 +1,44 @@
+.route-category {
+    margin-bottom: 40px;
+}
+
+.route-category > h3 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    align-self: center;
+    justify-content: center;
+    display: flex;
+}
+
+.routes-section-header > h2 {
+    color: #333;
+    font-weight: 600;
+    font-size: 28px;
+    
+    
+}
+
+.routes-section-header{
+    display: flex;
+    justify-content: center;
+}
+
+.container-my-routes-section{
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+   
+}
+
+
+.empty-msg {
+    color: #888;
+    font-style: italic;
+    padding: 10px;
+}
