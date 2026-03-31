@@ -16,6 +16,16 @@
     box-sizing: border-box;
 }
 
+/* Animação de entrada suave */
+@keyframes pageEnter {
+    from { 
+        opacity: 0; 
+    }
+    to { 
+        opacity: 1; 
+    }
+}
+
 body {
     font-family: 'Roboto', sans-serif;
     color: var(--text-dark);
@@ -24,6 +34,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    animation: pageEnter 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .container {
