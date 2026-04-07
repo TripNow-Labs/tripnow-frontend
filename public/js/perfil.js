@@ -250,13 +250,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     payload[dbField] = input.value; // ex: payload.biografia = valor do input 'bio'
                 }
             }    
-                if (base64Photo) {
-                    payload.url_foto_perfil = base64Photo; // Nome da coluna no seu UserController.js
-                }
             
-
             try {
                 // 2. Envia para a API
+                // Removido o upload da foto do payload, pois agora é um endpoint separado (PATCH /user/profile-image)
                 const response = await fetch(`${API_BASE}/user/${currentUserId}`, {
                     method: 'PUT',
                     headers: {
@@ -289,29 +286,66 @@ document.addEventListener('DOMContentLoaded', function() {
     const cameraIcon = document.querySelector('.camera-icon');
     const fileUploadInput = document.getElementById('file-upload-input');
     const profilePicImg = document.getElementById('user-profile-pic');
-    let base64Photo = null; // Variável global para guardar a nova foto
 
-    if (cameraIcon && fileUploadInput) {
-        cameraIcon.addEventListener('click', () => fileUploadInput.click());
+    // Verifica se o input de arquivo existe na tela
+    if (fileUploadInput) {
         
+        // 1. Abre o seletor ao clicar no ícone da câmera
+        if (cameraIcon) {
+            cameraIcon.addEventListener('click', () => fileUploadInput.click());
+        }
+
+        // 2. Abre o seletor ao clicar na própria foto de perfil (Extra para melhor Usabilidade)
+        if (profilePicImg) {
+            profilePicImg.style.cursor = 'pointer'; // Deixa o mouse com a mãozinha
+            profilePicImg.addEventListener('click', () => fileUploadInput.click());
+        }
+        
+        // 3. Dispara quando o usuário escolhe a foto no pop-up
         fileUploadInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Pré-visualização imediata
+            // Pré-visualização imediata no navegador
             const reader = new FileReader();
-        reader.onload = (ev) => { 
-            if(profilePicImg) profilePicImg.src = ev.target.result; 
-            base64Photo = ev.target.result; // Salva o código da imagem
-            alert("Clique em 'Salvar Alterações' para confirmar a nova foto.");
-        };
+            reader.onload = (ev) => { 
+                if(profilePicImg) profilePicImg.src = ev.target.result; 
+            };
+            reader.readAsDataURL(file);
 
-        reader.readAsDataURL(file);
+            // --- LÓGICA DE UPLOAD (Cloudinary) ---
+            const formData = new FormData();
+            formData.append('foto', file); // 'foto' deve ser o mesmo nome lá do upload.single('foto') do back-end
 
-            // [TODO] Implementar upload real da imagem para o servidor aqui
-            // Por enquanto, como a API espera URL de texto, não podemos enviar o arquivo binário direto no PUT JSON.
-            // Seria necessário uma rota de upload separada ou conversão Base64.
-            //alert("Imagem selecionada visualmente. Implementar rota de upload de arquivos no backend para persistir.");
+            try {
+                console.log("Enviando foto para a nuvem...");
+
+                const response = await fetch(`${API_BASE}/user/profile-image`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // Sem Content-Type, o navegador cuida do multipart/form-data
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    alert("Foto de perfil atualizada com sucesso!");
+                    
+                    // Atualiza a imagem com a URL oficial que voltou do Cloudinary
+                    if(profilePicImg && responseData.url) {
+                        profilePicImg.src = responseData.url;
+                    }
+                } else {
+                    const errorData = await response.json();
+                    alert("Falha ao salvar a foto: " + (errorData.message || 'Erro desconhecido'));
+                }
+
+            } catch (error) {
+                console.error("Erro no upload:", error);
+                alert("Erro de conexão ao tentar salvar a foto.");
+            }
         });
     }
 
