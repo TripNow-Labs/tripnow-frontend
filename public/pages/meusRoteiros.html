@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Roteiros</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+    </style>
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="../css/meusRoteiros.css">
+</head>
+
+<body>
+
+    <trip-header></trip-header>
+        <main class="container-my-routes-section">
+    <div class="routes-section-header">
+        <h2>Meus Roteiros</h2>
+    </div>
+
+    <section class="route-category">
+        <h3><i class="fas fa-plane-departure"></i> Roteiros Ativos</h3>
+        <div id="container-ativos" class="route-card-grid"></div>
+    </section>
+
+    <section class="route-category">
+        <h3><i class="fas fa-calendar-alt"></i> Próximas Viagens</h3>
+        <div id="container-futuros" class="route-card-grid"></div>
+    </section>
+
+    <section class="route-category">
+        <h3><i class="fas fa-check-circle"></i> Já Realizados</h3>
+        <div id="container-concluidos" class="route-card-grid"></div>
+    </section>
+    </main>
+    <trip-footer></trip-footer>
+    <script src="../js/layout.js"></script>
+    <script src="../js/components/tripHeader.js"></script> <!-- import do component header -->
+    <script src="../js/components/tripFooter.js"></script> <!-- import do component footer -->
+    <script src="../js/meusRoteiros.js"></script>
+</body>
+
+</html>
