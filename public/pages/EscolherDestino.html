@@ -7,7 +7,7 @@
     <title>Planeje seu Roteiro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../css/layout.css">
-    <link rel="stylesheet" href="../css/EscolherDestino [NOVO].css">
+    <link rel="stylesheet" href="../css/EscolherDestino.css">
 </head>
 
 <body>
@@ -49,10 +49,10 @@
                     <p class="section-subtitle">Selecione a cidade para onde você quer viajar</p>
 
                     <div class="category-filters">
-                        <button type="button" class="filter-pill active">Popular</button>
-                        <button type="button" class="filter-pill">Praia</button>
-                        <button type="button" class="filter-pill">Europa</button>
-                        <button type="button" class="filter-pill">América</button>
+                        <button type="button" class="filter-pill active" data-search="Brasil">Brasil</button>
+                        <button type="button" class="filter-pill" data-search="Europa">Europa</button>
+                        <button type="button" class="filter-pill" data-search="Praia">Praia</button>
+                        <button type="button" class="filter-pill" data-search="Popular">Popular</button>
                     </div>
 
                     <div class="search-input-container">
@@ -68,7 +68,7 @@
                     </div>
 
                     <div class="city-cards-grid" id="containerCards">
-                        </div>
+                    </div>
                 </section>
 
             </form>
@@ -81,7 +81,7 @@
     <script src="../js/layout.js"></script>
     <script src="../js/components/tripHeader.js"></script>
     <script src="../js/components/tripFooter.js"></script>
-    <script src="../js/EscolherDestino [NOVO].js"></script>
+    <script src="../js/EscolherDestino.js"></script>
 </body>
 
 </html>
