@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             routesContainer.innerHTML = `
                 <div style="text-align: center; padding: 40px; width: 100%; grid-column: 1/-1;">
                     <p style="color: #666; margin-bottom: 15px;">Você ainda não tem roteiros criados.</p>
-                    <a href="/public/pages/escolherdest.html" class="btn btn-primary">Criar meu primeiro roteiro</a>
+                    <a href="/public/pages/EscolherDestino [NOVO].html" class="btn btn-primary">Criar meu primeiro roteiro</a>
                 </div>
             `;
             return;
