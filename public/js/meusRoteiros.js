@@ -17,33 +17,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function categorizeAndRender(roteiros) {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0); // Zera hora para comparar apenas o dia
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0); // Zera hora para comparar apenas o dia
 
-    // 1. Filtragem baseada APENAS na data_inicio
-    const ativos = roteiros.filter(r => {
-        const dataInicio = new Date(r.data_inicio);
-        dataInicio.setHours(0, 0, 0, 0);
-        return dataInicio.getTime() === hoje.getTime(); // Começa hoje?
-    });
+        // 1. Filtragem baseada APENAS na data_inicio
+        const ativos = roteiros.filter(r => {
+            const dataInicio = new Date(r.data_inicio);
+            dataInicio.setHours(0, 0, 0, 0);
+            return dataInicio.getTime() === hoje.getTime(); // Começa hoje?
+        });
 
-    const futuros = roteiros.filter(r => {
-        const dataInicio = new Date(r.data_inicio);
-        dataInicio.setHours(0, 0, 0, 0);
-        return dataInicio.getTime() > hoje.getTime(); // Ainda vai começar
-    });
+        const futuros = roteiros.filter(r => {
+            const dataInicio = new Date(r.data_inicio);
+            dataInicio.setHours(0, 0, 0, 0);
+            return dataInicio.getTime() > hoje.getTime(); // Ainda vai começar
+        });
 
-    const concluidos = roteiros.filter(r => {
-        const dataInicio = new Date(r.data_inicio);
-        dataInicio.setHours(0, 0, 0, 0);
-        return dataInicio.getTime() < hoje.getTime(); // Já passou da data de início
-    });
+        const concluidos = roteiros.filter(r => {
+            const dataInicio = new Date(r.data_inicio);
+            dataInicio.setHours(0, 0, 0, 0);
+            return dataInicio.getTime() < hoje.getTime(); // Já passou da data de início
+        });
 
-    // 2. Renderização nos containers (IDs que definimos no passo anterior)
-    renderList(ativos, 'container-ativos', 'Nenhum roteiro começando hoje.');
-    renderList(futuros, 'container-futuros', 'Você não tem viagens futuras planejadas.');
-    renderList(concluidos, 'container-concluidos', 'Histórico de viagens vazio.');
-}
+        // 2. Renderização nos containers (IDs que definimos no passo anterior)
+        renderList(ativos, 'container-ativos', 'Nenhum roteiro começando hoje.');
+        renderList(futuros, 'container-futuros', 'Você não tem viagens futuras planejadas.');
+        renderList(concluidos, 'container-concluidos', 'Histórico de viagens vazio.');
+    }
 
     function renderList(lista, containerId, emptyMessage) {
         const container = document.getElementById(containerId);

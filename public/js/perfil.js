@@ -1,5 +1,5 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
+document.addEventListener('DOMContentLoaded', function () {
+
     // --- VARIÁVEIS GLOBAIS ---
     let currentUserId = null;
 
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error('Erro ao buscar perfil');
             }
@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const userData = await response.json();
 
             console.log("Dados recebidos do Back-end:", userData);
-            
+
             // [IMPORTANTE] Salva o ID que veio do banco para usar no PUT/DELETE
             currentUserId = userData.id;
 
             loadProfileInfo(userData);
-            
+
             // Busca roteiros (se essa rota existir e estiver funcionando)
             fetchUserRoteiros();
 
         } catch (error) {
             console.error("Falha:", error);
             const nameEl = document.getElementById('user-profile-name');
-            if(nameEl) nameEl.textContent = "Erro ao carregar";
+            if (nameEl) nameEl.textContent = "Erro ao carregar";
         }
     }
 
@@ -73,22 +73,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const responseData = await response.json();
                 const roteiros = Array.isArray(responseData) ? responseData : (responseData.data || []);
                 // ATUALIZA APENAS O CONTADOR DE ROTEIROS
-            const countRoteirosEl = document.getElementById('count-roteiros');
-            if (countRoteirosEl) {
-                // Pega a quantidade de itens no array retornado pelo banco
-                countRoteirosEl.textContent = roteiros.length; 
-            }
+                const countRoteirosEl = document.getElementById('count-roteiros');
+                if (countRoteirosEl) {
+                    // Pega a quantidade de itens no array retornado pelo banco
+                    countRoteirosEl.textContent = roteiros.length;
+                }
 
-            // Mantém o carregamento da lista visual no histórico
-            loadHistory(roteiros);
-        } else {
-            loadHistory([]); 
+                // Mantém o carregamento da lista visual no histórico
+                loadHistory(roteiros);
+            } else {
+                loadHistory([]);
+            }
+        } catch (error) {
+            console.error("Erro ao buscar roteiros:", error);
+            loadHistory([]);
         }
-    } catch (error) {
-        console.error("Erro ao buscar roteiros:", error);
-        loadHistory([]);
     }
-}
 
     function loadProfileInfo(data) {
         const userNameElement = document.getElementById('user-profile-name');
@@ -96,9 +96,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Atualiza Header (Nome e Foto)
         if (userNameElement) userNameElement.textContent = data.name || "Usuário";
-        
+
         if (userPicElement && data.url_foto_perfil) {
-             userPicElement.src = data.url_foto_perfil;
+            userPicElement.src = data.url_foto_perfil;
         }
 
         // Atualiza Formulário "Dados Pessoais"
@@ -120,18 +120,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         pElement.textContent = dbValue;
                     }
                 } else {
-                    pElement.textContent = dbValue || ''; 
+                    pElement.textContent = dbValue || '';
                 }
             }
-            
+
             // Atualiza Input (Edit Mode)
             const inputElement = document.querySelector(`.edit-mode[data-field="${htmlField}"]`);
             if (inputElement) {
                 if (inputElement.type === 'date' && dbValue) {
                     const dateObj = new Date(dbValue);
                     if (!isNaN(dateObj)) {
-                         dateObj.setMinutes(dateObj.getMinutes() + dateObj.getTimezoneOffset());
-                         inputElement.value = dateObj.toISOString().split('T')[0];
+                        dateObj.setMinutes(dateObj.getMinutes() + dateObj.getTimezoneOffset());
+                        inputElement.value = dateObj.toISOString().split('T')[0];
                     }
                 } else {
                     inputElement.value = dbValue || '';
@@ -143,9 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadHistory(roteiros) {
         const historyListContainer = document.getElementById('history-list-container');
         if (!historyListContainer) return;
-        
+
         historyListContainer.innerHTML = '';
-        
+
         if (!roteiros || roteiros.length === 0) {
             historyListContainer.innerHTML = '<p style="color: var(--cor-subtitulo); padding: 20px;">Você ainda não tem roteiros criados.</p>';
             return;
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roteiros.forEach(roteiro => {
             let statusClass = 'status-planejado';
             let statusText = 'Planejado';
-            
+
             // Lógica simples de status baseada na data
             if (roteiro.data_inicio) {
                 const dataFim = new Date(roteiro.data_inicio);
@@ -192,12 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================
     // --- LÓGICA DE INTERFACE ---
     // =========================================================
-    
+
     // 1. Abas
     const tabs = document.querySelectorAll('.tab-link');
     const contents = document.querySelectorAll('.details-content');
     tabs.forEach(tab => {
-        tab.addEventListener('click', function(event) {
+        tab.addEventListener('click', function (event) {
             event.preventDefault();
             tabs.forEach(t => t.classList.remove('active'));
             contents.forEach(c => c.classList.remove('active'));
@@ -214,17 +214,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancelBtn');
 
     if (editProfileBtn) editProfileBtn.addEventListener('click', () => profileForm.classList.add('is-editing'));
-    
+
     if (cancelBtn) cancelBtn.addEventListener('click', () => {
         profileForm.classList.remove('is-editing');
         fetchAndLoadProfile(); // Reseta os campos para o valor original
     });
-    
+
     // --- LÓGICA DE SALVAR (PUT) ---
     if (saveChangesBtn) {
-        saveChangesBtn.addEventListener('click', async function(event) {
+        saveChangesBtn.addEventListener('click', async function (event) {
             event.preventDefault();
-            
+
             if (!currentUserId) {
                 alert("Erro: ID de usuário não encontrado. Recarregue a página.");
                 return;
@@ -236,15 +236,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 1. Monta o Payload com as chaves corretas do Banco
             const payload = {};
-            
+
             // Itera sobre o mapa para pegar os valores dos inputs
             for (const [htmlField, dbField] of Object.entries(fieldMapping)) {
                 const input = profileForm.querySelector(`.edit-mode[data-field="${htmlField}"]`);
                 if (input) {
                     payload[dbField] = input.value; // ex: payload.biografia = valor do input 'bio'
                 }
-            }    
-            
+            }
+
             try {
                 // 2. Envia para a API
                 // Removido o upload da foto do payload, pois agora é um endpoint separado (PATCH /user/profile-image)
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Verifica se o input de arquivo existe na tela
     if (fileUploadInput) {
-        
+
         // 1. Abre o seletor ao clicar no ícone da câmera
         if (cameraIcon) {
             cameraIcon.addEventListener('click', () => fileUploadInput.click());
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             profilePicImg.style.cursor = 'pointer'; // Deixa o mouse com a mãozinha
             profilePicImg.addEventListener('click', () => fileUploadInput.click());
         }
-        
+
         // 3. Dispara quando o usuário escolhe a foto no pop-up
         fileUploadInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -302,8 +302,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Pré-visualização imediata no navegador
             const reader = new FileReader();
-            reader.onload = (ev) => { 
-                if(profilePicImg) profilePicImg.src = ev.target.result; 
+            reader.onload = (ev) => {
+                if (profilePicImg) profilePicImg.src = ev.target.result;
             };
             reader.readAsDataURL(file);
 
@@ -323,9 +323,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     const responseData = await response.json();
                     alert("Foto de perfil atualizada com sucesso!");
-                    
+
                     // Atualiza a imagem com a URL oficial que voltou do Cloudinary
-                    if(profilePicImg && responseData.url) {
+                    if (profilePicImg && responseData.url) {
                         profilePicImg.src = responseData.url;
                     }
                 } else {
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
         if (settingsModal && event.target == settingsModal) settingsModal.style.display = "none";
         const mapModal = document.getElementById('map-modal');
         if (mapModal && event.target == mapModal) mapModal.style.display = "none";
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeModalBtn && mapModal) {
         closeModalBtn.addEventListener('click', () => {
             mapModal.style.display = 'none';
-            if(googleMapIframe) googleMapIframe.src = '';
+            if (googleMapIframe) googleMapIframe.src = '';
         });
     }
 });

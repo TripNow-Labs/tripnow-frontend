@@ -9,7 +9,7 @@ btsVerDetalhes.forEach(botao => {
             // 2. Cria a URL incluindo o Parâmetro de Consulta (Query Parameter)
             // O formato é: ?CHAVE=VALOR
             const urlDestino = `EscolherDestino.html?cidadeID=${id}`;
-            
+
             // 3. Redireciona o navegador para a URL completa
             window.location.href = urlDestino; // Ex: EscolherDestino.html?cidadeID=paris_franca
         } else {

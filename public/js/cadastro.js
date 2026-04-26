@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- ELEMENTOS DO DOM ---
     const formCadastro = document.getElementById('form-cadastro');
     const formVerification = document.getElementById('form-verification');
-    
+
     const stepSignup = document.getElementById('step-signup');
     const stepVerification = document.getElementById('step-verification');
-    
+
     const feedbackMessage = document.getElementById('feedback-message');
     const emailDisplay = document.getElementById('email-display');
 
@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const codeInput = document.getElementById('code');
 
     // URL base da API do seu backend (com o prefixo /api/v1)
-    const API_BASE_URL = 'http://localhost:3333/api/v1'; 
+    const API_BASE_URL = 'http://localhost:3333/api/v1';
 
     // --- FUNÇÕES UTILITÁRIAS ---
-    
+
     // Exibe mensagens de erro ou sucesso
     const showMessage = (msg, type = 'error') => {
         feedbackMessage.textContent = msg;
@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA DOS ÍCONES DE SENHA ---
     document.querySelectorAll('.toggle-password').forEach(icon => {
-        icon.addEventListener('click', function() {
+        icon.addEventListener('click', function () {
             const targetId = this.getAttribute('data-target');
             const input = document.getElementById(targetId);
-            
+
             if (input.type === 'password') {
                 input.type = 'text';
                 this.classList.remove('fa-eye');
@@ -101,9 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 showMessage('Código enviado para seu e-mail!', 'success');
-                
+
                 emailDisplay.textContent = emailInput.value;
-                
+
                 stepSignup.classList.add('hidden');
                 stepVerification.classList.remove('hidden');
             } else {

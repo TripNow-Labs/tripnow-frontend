@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const originalFetch = window.fetch;
-    window.fetch = async function(...args) {
+    window.fetch = async function (...args) {
         // Automatically add credentials: 'include' for HttpOnly cookies to work
         if (args.length === 1) {
             args.push({ credentials: 'include' });
         } else if (args.length === 2) {
             args[1] = args[1] || {};
             args[1].credentials = 'include';
-            
+
             // Remove Authorization header if it exists, as we now use HttpOnly cookies
             if (args[1].headers) {
                 if (args[1].headers instanceof Headers) {
@@ -31,11 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await originalFetch.apply(this, args);
-            
+
             // Se retornar 401 e não for uma rota de login/auth (para evitar loop infinito)
             const requestUrl = typeof args[0] === 'string' ? args[0] : (args[0].url || '');
             const isAuthEndpoint = requestUrl.includes('/auth') || requestUrl.includes('/login');
-            
+
             if (response.status === 401 && !isAuthEndpoint) {
                 if (!isRefreshing) {
                     isRefreshing = true;
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isAuthPage) {
             alert("Sessão expirada ou não autorizada pela API (Erro 401). Faça login novamente.");
             localStorage.removeItem('userName');
-            window.location.href = '/public/pages/login.html'; 
+            window.location.href = '/public/pages/login.html';
         }
     }
 
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error("Erro ao fazer logout na API", err);
             }
-            
+
             localStorage.removeItem('token');
             localStorage.removeItem('userName');
             window.location.href = '/public/pages/login.html';

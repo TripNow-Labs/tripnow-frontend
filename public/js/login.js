@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     const loginButton = document.getElementById('login-button');
     const emailInput = document.getElementById('email');
     const senhaInput = document.getElementById('senha');
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_URL = 'http://localhost:3333/api/v1/auth';
 
     const handleLogin = async () => {
-        
+
         errorMessage.classList.remove('active');
         errorMessage.textContent = '';
         loginButton.disabled = true;
@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-            credentials: 'include', // Permite que o navegador salve o cookie httpOnly
-                body: JSON.stringify({ 
-                    email: email, 
-                    password: senha 
+                credentials: 'include', // Permite que o navegador salve o cookie httpOnly
+                body: JSON.stringify({
+                    email: email,
+                    password: senha
                 })
             });
 
@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.user && data.user.user_name) {
                     localStorage.setItem('userName', data.user.user_name);
                 }
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
-                window.location.href = '/public/pages/home.html';            
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
+                window.location.href = '/public/pages/home.html';
             } else {
                 showError(data.error || data.message || 'E-mail ou senha incorretos.');
             }
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loginButton.addEventListener('click', handleLogin);
-    
+
     senhaInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             handleLogin();
