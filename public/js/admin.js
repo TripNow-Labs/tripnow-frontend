@@ -163,9 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
             // --- LÓGICA DE GERENCIAR CIDADES ---
-            const rawCitiesApiUrl = '/api/tourist/raw-curated-cities'; 
-            const updateApiUrl = '/api/tourist/update-curated-cities';
-            const clearCacheApiUrl = '/api/tourist/clear-cache';
+            const rawCitiesApiUrl = 'http://localhost:3333/api/v1/api/admin/tourist/raw-curated-cities'; 
+            const updateApiUrl = 'http://localhost:3333/api/v1/api/admin/tourist/update-curated-cities';
+            const clearCacheApiUrl = 'http://localhost:3333/api/v1/api/admin/tourist/clear-cache';
 
             const citiesListDiv = document.getElementById('cities-list');
             const statusDiv = document.getElementById('status');
@@ -182,7 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!citiesListDiv) return; // Só executa se estivermos na página certa
                 
                 statusDiv.textContent = 'Carregando cidades...';
-                fetch(rawCitiesApiUrl)
+                const token = localStorage.getItem('token');
+                fetch(rawCitiesApiUrl, { credentials: 'include', headers: token ? { 'Authorization': `Bearer ${token}` } : {} })
                     .then(res => res.json())
                     .then(response => {
                         citiesData = response.data; 
@@ -248,7 +249,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!confirm('Tem certeza que deseja limpar o cache?')) return;
                 statusDiv.textContent = 'Limpando cache do servidor...';
                 statusDiv.style.color = 'blue';
-                fetch(clearCacheApiUrl, { method: 'POST' })
+                const token = localStorage.getItem('token');
+                fetch(clearCacheApiUrl, { method: 'POST', credentials: 'include', headers: token ? { 'Authorization': `Bearer ${token}` } : {} })
                     .then(res => { if (!res.ok) throw new Error('Falha ao limpar o cache.'); return res.json(); })
                     .then(data => { statusDiv.textContent = data.message; statusDiv.style.color = 'green'; })
                     .catch(err => { statusDiv.textContent = err.message; statusDiv.style.color = 'red'; });
@@ -313,9 +315,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveAllBtn.addEventListener('click', () => {
                     statusDiv.textContent = 'Salvando alterações no servidor...';
                     statusDiv.style.color = 'blue';
+                    const token = localStorage.getItem('token');
                     fetch(updateApiUrl, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
                         body: JSON.stringify({ curatedCities: citiesData })
                     })
                     .then(res => { if (!res.ok) throw new Error('Falha ao salvar no servidor.'); return res.json(); })

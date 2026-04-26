@@ -3,15 +3,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- VARIÁVEIS GLOBAIS ---
     let currentUserId = null;
 
-    // 1. Verifica Token
-    const token = localStorage.getItem('token');
-    if (!token) {
+    // 1. Verifica se o usuário está logado
+    const userNameLocal = localStorage.getItem('userName');
+    if (!userNameLocal) {
         window.location.href = '/public/index.html';
         return;
     }
 
     // 2. Configuração da API
-    const API_BASE = 'http://localhost:3333';
+    const API_BASE = 'http://localhost:3333/api/v1';
     const API_PROFILE_URL = `${API_BASE}/user/profile`;
 
     // 3. Mapeamento: [Nome no HTML (data-field)] : [Nome exato da coluna no Banco]
@@ -31,20 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(API_PROFILE_URL, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             
             if (!response.ok) {
-                // Se der erro 401, o token expirou
-                if (response.status === 401) {
-                    alert("Sessão expirada. Faça login novamente.");
-                    localStorage.removeItem('token');
-                    window.location.href = '/public/index.html';
-                    return;
-                }
                 throw new Error('Erro ao buscar perfil');
             }
 
@@ -73,11 +66,12 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`${API_BASE}/roteiros`, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (response.ok) {
-                const roteiros = await response.json();
+                const responseData = await response.json();
+                const roteiros = Array.isArray(responseData) ? responseData : (responseData.data || []);
                 // ATUALIZA APENAS O CONTADOR DE ROTEIROS
             const countRoteirosEl = document.getElementById('count-roteiros');
             if (countRoteirosEl) {
@@ -256,9 +250,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Removido o upload da foto do payload, pois agora é um endpoint separado (PATCH /user/profile-image)
                 const response = await fetch(`${API_BASE}/user/${currentUserId}`, {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
                 });
@@ -322,10 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const response = await fetch(`${API_BASE}/user/profile-image`, {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                        // Sem Content-Type, o navegador cuida do multipart/form-data
-                    },
+                    credentials: 'include',
                     body: formData
                 });
 
@@ -365,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     const response = await fetch(`${API_BASE}/user/${currentUserId}`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        credentials: 'include'
                     });
                     if (response.ok) {
                         alert("Conta excluída.");

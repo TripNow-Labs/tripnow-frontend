@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_ROTEIROS = 'http://localhost:3333/roteiros';
-    const token = localStorage.getItem('token');
+    const API_ROTEIROS = 'http://localhost:3333/api/v1/roteiros';
 
     async function fetchMyRoutes() {
         try {
             const response = await fetch(API_ROTEIROS, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
             if (!response.ok) throw new Error('Erro ao buscar roteiros');
 
-            const roteiros = await response.json();
+            const responseData = await response.json();
+            const roteiros = Array.isArray(responseData) ? responseData : (responseData.data || []);
             categorizeAndRender(roteiros);
         } catch (error) {
             console.error(error);

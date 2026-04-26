@@ -2,9 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 1. CONFIGURAÇÕES E ESTADO GLOBAL
     // ==========================================
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert('Você precisa estar logado para acessar seu roteiro.');
+    const userNameLocal = localStorage.getItem('userName');
+    if (!userNameLocal) {
         window.location.href = '/public/index.html';
         return;
     }
@@ -18,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const API_BASE = 'http://localhost:3333';
+    const API_BASE = 'http://localhost:3333/api/v1';
     let roteiroData = null; // Guardará o JSON completo do roteiro
     let diaAtualSelecionado = 1; // Controla a aba atual
 
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const daysNav = document.getElementById('days-nav');
     const currentDayTitle = document.getElementById('current-day-title');
     const activitiesList = document.getElementById('activities-list');
-    
+
     // Modal e Busca
     const modal = document.getElementById('search-modal');
     const openModalBtn = document.getElementById('add-activity-btn');
@@ -54,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const r = roteiroData.roteiro;
             const nomeCidade = r.cidade ? r.cidade.nome : 'Destino';
             modalTitle.textContent = `Sugestões em ${nomeCidade}`;
-            
+
             modal.classList.add('open');
             document.body.style.overflow = 'hidden'; // Trava o scroll do fundo
 
@@ -74,11 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadRoteiro() {
         try {
             const response = await fetch(`${API_BASE}/roteiros/${roteiroId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Falha ao carregar roteiro');
-            
+
             roteiroData = await response.json();
 
             renderHeader();
@@ -94,15 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchAttractionsForModal(cidade) {
         attractionsGrid.innerHTML = '<p style="grid-column: span 2; text-align:center;">Buscando atrações...</p>';
-        
+
         try {
             const response = await fetch(`${API_BASE}/api/tourist/search?q=${encodeURIComponent(cidade)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Erro ao buscar atrações');
             const data = await response.json();
-            
+
             const arrayData = Array.isArray(data) ? data : [data];
             const destino = arrayData[0] || {};
             const atraveis = destino.pontos_turisticos || destino.touristSpots || [];
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.createElement('button');
             btn.className = `day-pill ${i === 1 ? 'active' : ''}`;
             btn.textContent = `Dia ${i}`;
-            
+
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
@@ -154,18 +153,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function selectDay(dia) {
         diaAtualSelecionado = dia;
-        
+
         const r = roteiroData.roteiro;
         const dataDiaAtual = parseDate(r.data_inicio);
         dataDiaAtual.setDate(dataDiaAtual.getDate() + (dia - 1));
-        
+
         currentDayTitle.textContent = formatFullDayDate(dataDiaAtual);
         renderActivities(dia);
     }
 
     function renderActivities(dia) {
-        activitiesList.innerHTML = ''; 
-        
+        activitiesList.innerHTML = '';
+
         const atividadesDoDia = roteiroData.dias[dia] || [];
 
         if (atividadesDoDia.length === 0) {
@@ -184,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imgUrl = atracao.url_imagem || 'https://images.unsplash.com/photo-1488085061387-422e15b40b18?q=80&w=400&auto=format&fit=crop';
             const categoria = atracao.categoria || 'Lazer';
             const descricao = atracao.descricao ? atracao.descricao.substring(0, 60) + '...' : 'Uma atração imperdível.';
-            
+
             // Verifica se é o último item (para não renderizar a setinha no final)
             const isLastItem = index === atividadesDoDia.length - 1;
 
@@ -225,14 +224,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 6. LÓGICA DO MODAL DE BUSCA
     // ==========================================
-    
+
     function renderAttractionsGrid(atraveis) {
         attractionsGrid.innerHTML = '';
 
         atraveis.forEach(atracao => {
             const card = document.createElement('div');
             card.className = 'attraction-card';
-            
+
             const categoria = atracao.categoria || 'Lazer';
             const imgUrl = atracao.url_imagem || atracao.image || 'https://images.unsplash.com/photo-1488085061387-422e15b40b18?q=80&w=400&auto=format&fit=crop';
             // Pega a descrição para levar pro card principal
@@ -268,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Feedback visual instantâneo
         btnElement.classList.add('added');
         btnElement.innerHTML = '<i class="fas fa-check"></i> Adicionado';
-        
+
         // 2. Extrai os dados que guardamos no botão
         const nome = btnElement.getAttribute('data-nome');
         const imgUrl = btnElement.getAttribute('data-imagem');
@@ -280,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: Date.now(), // ID temporário até o banco devolver o real
             horario: "08:30",
             duracao: "2h",
-            atracao: { 
+            atracao: {
                 nome: nome,
                 url_imagem: imgUrl,
                 categoria: categoria,
@@ -291,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!roteiroData.dias[diaAtualSelecionado]) {
             roteiroData.dias[diaAtualSelecionado] = [];
         }
-        
+
         // Adiciona na tela imediatamente
         roteiroData.dias[diaAtualSelecionado].push(novaAtividade);
         renderActivities(diaAtualSelecionado);
@@ -305,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ==========================================
         // 4. SALVAR NO BACK-END (BANCO DE DADOS)
         // ==========================================
-       try {
+        try {
             // Monte o pacote de dados (Payload) conforme o que sua API espera
             const payload = {
                 numero_dia: diaAtualSelecionado, // 👈 MUDAMOS AQUI (de 'dia_roteiro' para 'numero_dia')
@@ -321,9 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const response = await fetch(`${API_BASE}/roteiros/${roteiroId}/atracoes`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
@@ -348,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     function parseDate(dateString) {
         if (!dateString) return new Date();
-        return new Date(dateString + 'T12:00:00'); 
+        return new Date(dateString + 'T12:00:00');
     }
 
     function formatShortDate(date) {
@@ -365,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             day: 'numeric',
             month: 'long'
         }).format(date);
-        
+
         return formatado.charAt(0).toUpperCase() + formatado.slice(1);
     }
 

@@ -8,14 +8,14 @@ btsVerDetalhes.forEach(botao => {
         if (id) {
             // 2. Cria a URL incluindo o Parâmetro de Consulta (Query Parameter)
             // O formato é: ?CHAVE=VALOR
-            const urlDestino = `detalhesDestino.html?cidadeID=${id}`;
+            const urlDestino = `EscolherDestino.html?cidadeID=${id}`;
             
             // 3. Redireciona o navegador para a URL completa
-            window.location.href = urlDestino; // Ex: detalhesDestino.html?cidadeID=paris_franca
+            window.location.href = urlDestino; // Ex: EscolherDestino.html?cidadeID=paris_franca
         } else {
             console.error('ID do destino não encontrado no botão.');
             // Tratar erro ou continuar o redirecionamento sem ID, se necessário.
-            window.location.href = 'detalhesDestino.html';
+            window.location.href = 'EscolherDestino.html';
         }
     });
 });
