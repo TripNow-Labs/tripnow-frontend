@@ -67,7 +67,7 @@ class TripHeader extends HTMLElement {
                     <div class="dropdown-menu" id="dropdown">
                         <div class="dropdown-header">Olá, Viajante!</div>
                         <a href="/public/pages/home.html" class="dropdown-item"><i class="fas fa-home"></i> Início</a>
-                        <a href="/public/pages/escolherdest.html" class="dropdown-item"><i class="fas fa-plus-circle"></i> Criar Roteiro</a>
+                        <a href="/public/pages/EscolherDestino.html" class="dropdown-item"><i class="fas fa-plus-circle"></i> Criar Roteiro</a>
                         <a href="/public/pages/perfil.html" class="dropdown-item"><i class="fas fa-user-circle"></i> Meu Perfil</a>
                         <a href="/public/pages/meusRoteiros.html" class="dropdown-item"><i class="fas fa-map-marked-alt"></i> Meus Roteiros</a>
                         <div class="dropdown-divider"></div>
@@ -93,8 +93,17 @@ class TripHeader extends HTMLElement {
             if (!this.contains(e.target)) dropdown.classList.remove('show');
         });
 
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch('http://localhost:3333/api/v1/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (err) {
+                console.error('Erro ao fazer logout na API', err);
+            }
             localStorage.removeItem('token');
+            localStorage.removeItem('userName');
             window.location.href = '/public/pages/login.html';
         });
     }

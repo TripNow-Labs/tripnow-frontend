@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPassInput = document.getElementById('input-confirm-password');
     const codeInput = document.getElementById('code');
 
-    // URL base do seu backend
-    const API_BASE_URL = 'http://localhost:3333'; 
+    // URL base da API do seu backend (com o prefixo /api/v1)
+    const API_BASE_URL = 'http://localhost:3333/api/v1'; 
 
     // --- FUNÇÕES UTILITÁRIAS ---
     
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}/user/createuserverify`, {
+            const response = await fetch(`${API_BASE_URL}/user/createuserverifycode`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

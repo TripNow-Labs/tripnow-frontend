@@ -1,12 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert('Você precisa estar logado para planejar um roteiro.');
+    const userNameLocal = localStorage.getItem('userName');
+    if (!userNameLocal) {
         window.location.href = '/public/index.html';
         return;
     }
 
-    const API_BASE = 'http://localhost:3333';
+    const API_BASE = 'http://localhost:3333/api/v1';
     let cidadesCuradas = []; // Guarda as cidades iniciais (Rio, Paris, etc)
     let debounceTimer;
 
@@ -29,9 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCuratedCities() {
         try {
             containerCards.innerHTML = '<p style="text-align:center; width:100%;"><i class="fas fa-spinner fa-spin"></i> Carregando destinos incríveis...</p>';
-            
+
             const response = await fetch(`${API_BASE}/roteiros/curated-cities`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Erro ao carregar cidades');
@@ -68,13 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function searchCityGlobal(termo) {
         try {
             containerCards.innerHTML = '<p style="text-align:center; width:100%;"><i class="fas fa-spinner fa-spin"></i> Buscando no mapa mundial...</p>';
-            
+
             const response = await fetch(`${API_BASE}/api/tourist/search?q=${encodeURIComponent(termo)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (!response.ok) {
-                if(response.status === 404) {
+                if (response.status === 404) {
                     containerCards.innerHTML = '<p style="text-align:center; width:100%;">Nenhum destino encontrado com esse nome.</p>';
                     return;
                 }
@@ -85,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data) return;
 
             const arrayDeResultados = Array.isArray(data) ? data : [data];
-            
+
             const cidadesBuscadas = arrayDeResultados.map((item, index) => {
                 const infoCidade = item.cidade || item;
                 const infoPais = item.pais || {};
@@ -148,8 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderCities(cidadesCuradas); // Mostra tudo
         } else if (categoria === 'Brasil' || categoria === 'Europa') {
             // Filtra da lista curada pelo País ou Continente
-            const filtradas = cidadesCuradas.filter(c => 
-                c.pais.toLowerCase() === categoria.toLowerCase() || 
+            const filtradas = cidadesCuradas.filter(c =>
+                c.pais.toLowerCase() === categoria.toLowerCase() ||
                 c.continente.toLowerCase() === categoria.toLowerCase()
             );
             renderCities(filtradas);
@@ -164,10 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
         pill.addEventListener('click', (e) => {
             filterPills.forEach(p => p.classList.remove('active'));
             e.target.classList.add('active');
-            
+
             // Limpa a barra de busca se clicar numa Pill
-            if(searchInput) searchInput.value = ''; 
-            
+            if (searchInput) searchInput.value = '';
+
             aplicarFiltro(e.target.getAttribute('data-search') || e.target.textContent);
         });
     });
@@ -187,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Se digitou uma cidade, vai buscar no mundo todo!
             debounceTimer = setTimeout(() => {
                 searchCityGlobal(termo);
-            }, 800); 
+            }, 800);
         });
     }
 
@@ -207,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const diffTime = Math.abs(new Date(dataTermino) - new Date(dataInicio));
-                const duracaoDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+                const duracaoDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
                 const payload = {
                     roteiro: { data_inicio: dataInicio, duracao_dias: duracaoDias, numero_pessoas: 1, orcamento_total: 0 },
@@ -223,13 +222,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const response = await fetch(`${API_BASE}/roteiros`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
                     if (!response.ok) throw new Error('Erro ao criar roteiro');
                     const result = await response.json();
-                    
+
                     window.location.href = `/public/pages/roteiro-diario.html?id=${result.roteiroId}`;
 
                 } catch (error) {

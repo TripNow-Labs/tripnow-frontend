@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 3. CARREGAR ROTEIROS (NOVO) ---
     const routesContainer = document.getElementById('my-routes-container');
-    const API_ROTEIROS = 'http://localhost:3333/roteiros';
-    const token = localStorage.getItem('token'); // Ainda precisa do token para o fetch
+    const API_ROTEIROS = 'http://localhost:3333/api/v1/roteiros';
 
     const images = document.querySelectorAll('.hero-card-bg-carousel img');
     let currentIndex = 0;
@@ -30,14 +29,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch(API_ROTEIROS, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include' // <--- O navegador envia o cookie automaticamente
         });
 
         if (!response.ok) throw new Error('Erro ao buscar roteiros');
 
-        const roteiros = await response.json();
+        const responseData = await response.json();
+        
+        // --- EXTRATOR À PROVA DE FALHAS ---
+        // Encontra o array independente de qual chave o Back-end utilizou (data, roteiros, lista...)
+        let roteiros = [];
+        if (Array.isArray(responseData)) { roteiros = responseData; }
+        else if (responseData && typeof responseData === 'object') {
+            roteiros = responseData.data || responseData.roteiros || [];
+            if (roteiros.length === 0) {
+                for (let key in responseData) { if (Array.isArray(responseData[key])) { roteiros = responseData[key]; break; } }
+            }
+        }
 
         // --- LÓGICA DE FILTRAGEM E LIMITE (ADAPTADA) ---
         const hoje = new Date();
@@ -70,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             routesContainer.innerHTML = `
                 <div style="text-align: center; padding: 40px; width: 100%; grid-column: 1/-1;">
                     <p style="color: #666; margin-bottom: 15px;">Você ainda não tem roteiros criados.</p>
-                    <a href="/public/pages/EscolherDestino [NOVO].html" class="btn btn-primary">Criar meu primeiro roteiro</a>
+                    <a href="/public/pages/EscolherDestino.html" class="btn btn-primary">Criar meu primeiro roteiro</a>
                 </div>
             `;
             return;

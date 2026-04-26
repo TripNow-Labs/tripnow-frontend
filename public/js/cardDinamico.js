@@ -1,12 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- LÓGICA DE AUTH E HEADER ---
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const userName = localStorage.getItem('userName');
+    if (!userName) {
         window.location.href = '/public/index.html';
         return;
     }
-    const userName = localStorage.getItem('userName');
     if (userName) {
         const greetingElement = document.getElementById('user-greeting');
         if (greetingElement) {
@@ -52,11 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeDuplicates(list) {
         const seen = new Set();
         return list.filter(item => {
-            // Verifica se o item tem a estrutura mínima
-            if (!item || !item.cidade || !item.pais) return false;
+            if (!item) return false;
 
-            // Cria uma chave única: "nome_cidade-nome_pais" (ex: "paris-frança")
-            const uniqueKey = `${item.cidade.nome.trim()}-${item.pais.nome.trim()}`.toLowerCase();
+            const cName = item.cidade?.nome || item.nome || item.name;
+            const pName = item.pais?.nome || item.pais?.name || (typeof item.pais === 'string' ? item.pais : '');
+            
+            if (!cName) return false;
+
+            const uniqueKey = `${cName.trim()}-${pName.trim()}`.toLowerCase();
 
             if (seen.has(uniqueKey)) {
                 return false; // Já vimos essa cidade, ignora (é duplicata)
@@ -73,13 +75,20 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             containerCards.innerHTML = '<p class="loading-text">Carregando destinos incríveis...</p>';
             
-            const response = await fetch('http://localhost:3333/api/tourist/curated-cities', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await fetch('http://localhost:3333/api/v1/api/tourist/curated-cities', {
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Erro ao buscar cidades curadas');
 
-            let cities = await response.json();
+            let responseData = await response.json();
+            let cities = [];
+            if (Array.isArray(responseData)) { cities = responseData; }
+            else if (responseData && typeof responseData === 'object') {
+                if (Array.isArray(responseData.data)) cities = responseData.data;
+                else if (responseData.cidade || responseData.nome || responseData.name) cities = [responseData];
+                else { for (let key in responseData) { if (Array.isArray(responseData[key])) { cities = responseData[key]; break; } } }
+            }
             
             // [FILTRO] Aplica a regra de não repetir
             cities = removeDuplicates(cities);
@@ -105,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sectionTitle.textContent = `Resultados para "${query}"`;
             containerCards.innerHTML = '<p class="loading-text">Buscando seu destino...</p>';
 
-            const response = await fetch(`http://localhost:3333/api/tourist/search?q=${encodeURIComponent(query)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await fetch(`http://localhost:3333/api/v1/api/tourist/search?q=${encodeURIComponent(query)}`, {
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -117,7 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Erro na busca');
             }
             const result = await response.json();        
-            let resultsArray = Array.isArray(result) ? result : [result];
+            let resultsArray = [];
+            if (Array.isArray(result)) { resultsArray = result; }
+            else if (result && typeof result === 'object') {
+                if (Array.isArray(result.data)) resultsArray = result.data;
+                else if (result.cidade || result.nome || result.name) resultsArray = [result];
+                else { for (let key in result) { if (Array.isArray(result[key])) { resultsArray = result[key]; break; } } }
+            }
             resultsArray = removeDuplicates(resultsArray);  
             renderCards(resultsArray, true);
 
@@ -141,10 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dataList.forEach(item => {
             let cityName, countryName, imageUrl, description, fullObject;
-            cityName = item.cidade.nome;
-            countryName = item.pais.nome;
-            imageUrl = item.cidade.url_imagem;
-            description = item.cidade.descricao;
+            cityName = item.cidade?.nome || item.nome || item.name || 'Destino Desconhecido';
+            countryName = item.pais?.nome || item.pais?.name || (typeof item.pais === 'string' ? item.pais : '');
+            imageUrl = item.cidade?.url_imagem || item.url_imagem || item.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem';
+            description = item.cidade?.descricao || item.descricao || '';
             fullObject = item;
 
             const card = document.createElement('div');
@@ -204,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('pontosTuristicosDisponiveis', JSON.stringify(cityData.pontos_turisticos));
 
         console.log("Destino salvo:", cityData.cidade.nome);
-        window.location.href = '/public/pages/detalhesDestino.html'; 
+        window.location.href = '/public/pages/EscolherDestino.html'; 
     }
 
 

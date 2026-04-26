@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const senhaInput = document.getElementById('senha');
     const errorMessage = document.getElementById('error-message');
 
-    const API_URL = 'http://localhost:3333/auth';
+    const API_URL = 'http://localhost:3333/api/v1/auth';
 
     const handleLogin = async () => {
         
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+            credentials: 'include', // Permite que o navegador salve o cookie httpOnly
                 body: JSON.stringify({ 
                     email: email, 
                     password: senha 
@@ -37,13 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                }
-
                 if (data.user && data.user.user_name) {
                     localStorage.setItem('userName', data.user.user_name);
                 }
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+            }
                 window.location.href = '/public/pages/home.html';            
             } else {
                 showError(data.error || data.message || 'E-mail ou senha incorretos.');
