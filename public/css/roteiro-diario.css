@@ -477,3 +477,207 @@ body {
     padding: 0 8px;
     font-size: 14px;
 }
+
+/* ==================================
+   TELA DE DETALHES (OVERLAY DESLIZANTE)
+   ================================== */
+.details-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--bg-white);
+    z-index: 2000; /* Fica por cima de tudo */
+    transform: translateX(100%); /* Escondido à direita */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.details-modal.open {
+    transform: translateX(0); /* Desliza para o centro */
+}
+
+/* Imagem Hero */
+.details-hero {
+    height: 320px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.details-hero-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+}
+
+.details-hero-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.icon-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.topbar-actions { display: flex; gap: 12px; }
+
+/* Corpo dos Detalhes */
+.details-body {
+    background: var(--bg-white);
+    border-radius: 24px 24px 0 0;
+    margin-top: -24px; 
+    position: relative;
+    z-index: 2;
+    padding: 24px 16px 120px 16px;
+}
+
+.detail-header-info { margin-bottom: 24px; }
+.detail-header-info h2 { font-size: 26px; font-weight: 800; margin: 0 0 8px 0; }
+.detail-category-badge { color: var(--text-muted); font-size: 14px; }
+
+/* Botões de Ação (Favoritar, Rotas) */
+.detail-action-row {
+    display: flex; justify-content: space-between;
+    margin-bottom: 32px;
+}
+.action-item {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; color: var(--text-dark);
+}
+.action-item i {
+    width: 48px; height: 48px; border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--primary-cyan);
+}
+.action-item.highlight i { background: var(--primary-cyan); color: white; border: none; }
+
+/* Seções (Sobre, Info) */
+.detail-section { margin-bottom: 32px; }
+.detail-section h3 { font-size: 18px; margin-bottom: 12px; }
+.detail-section p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+/* Lista de Informações Práticas */
+.info-list { list-style: none; padding: 0; margin: 0; }
+.info-list li {
+    display: flex; gap: 16px; margin-bottom: 16px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border-soft);
+}
+.info-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.info-list i { color: var(--primary-cyan); font-size: 20px; margin-top: 4px; }
+.info-list strong { display: block; font-size: 11px; text-transform: uppercase; color: var(--text-light-muted); margin-bottom: 4px; }
+.info-list p { margin: 0; font-size: 14px; color: var(--text-dark); font-weight: 500; }
+
+/* Footer Fixo (Botão de Adicionar) */
+.details-sticky-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 16px; 
+    background: white;
+    border-top: 1px solid var(--border-soft); 
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+}
+.primary-add-btn {
+    width: 100%; padding: 16px;
+    background-color: var(--primary-cyan); color: white;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+}
+
+/* ==================================
+   MODAL DO MAPA (IFRAME)
+   ================================== */
+.map-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none; /* Escondido por padrão */
+    justify-content: center;
+    align-items: center;
+    z-index: 3000; /* Acima de tudo */
+    padding: 20px;
+}
+
+.map-modal.active { display: flex; }
+
+.map-modal-content {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    height: 80vh;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.map-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.map-header h3 { font-size: 16px; margin: 0; color: var(--text-dark); }
+
+.close-map-icon {
+    background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted);
+}
+
+.map-body { flex: 1; background: #eee; }
+
+.map-footer { padding: 12px; border-top: 1px solid var(--border-soft); text-align: center; }
+
+.secondary-btn {
+    background: none; border: 1px solid var(--primary-cyan); color: var(--primary-cyan);
+    padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
+}
+
+#map-iframe {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.detail-rating-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.stars-row {
+    color: #FFB400; /* Amarelo ouro das avaliações */
+    display: flex;
+    gap: 2px;
+    font-size: 14px;
+}
+
+.rating-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.rating-separator {
+    color: var(--text-light-muted);
+    font-size: 12px;
+}
