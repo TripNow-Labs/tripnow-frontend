@@ -46,6 +46,11 @@ class TripHeader extends HTMLElement {
                 color: #333; text-decoration: none; font-size: 0.9rem; transition: background 0.2s;
             }
             .dropdown-item:hover { background: #f3f4f6; color: #15ADE5; }
+            
+            /* Destaque visual para o botão de admin */
+            .admin-item { color: #d32f2f !important; font-weight: 500; }
+            .admin-item:hover { background: #ffebee !important; color: #b71c1c !important; }
+
             .dropdown-divider { height: 1px; background: #E5E7EB; margin: 5px 0; }
             .logout { color: #e63946 !important; }
             @keyframes fadeIn {
@@ -65,12 +70,12 @@ class TripHeader extends HTMLElement {
                         </svg>
                     </button>
                     <div class="dropdown-menu" id="dropdown">
-                        <div class="dropdown-header">Olá, Viajante!</div>
+                        <div class="dropdown-header" id="user-greeting">Olá, Viajante!</div>
                         <a href="/public/pages/home.html" class="dropdown-item"><i class="fas fa-home"></i> Início</a>
                         <a href="/public/pages/EscolherDestino.html" class="dropdown-item"><i class="fas fa-plus-circle"></i> Criar Roteiro</a>
                         <a href="/public/pages/perfil.html" class="dropdown-item"><i class="fas fa-user-circle"></i> Meu Perfil</a>
                         <a href="/public/pages/meusRoteiros.html" class="dropdown-item"><i class="fas fa-map-marked-alt"></i> Meus Roteiros</a>
-                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-divider" id="menu-divider"></div>
                         <a href="#" class="dropdown-item logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
                     </div>
                 </div>
@@ -83,6 +88,26 @@ class TripHeader extends HTMLElement {
         const trigger = this.shadowRoot.getElementById('trigger');
         const dropdown = this.shadowRoot.getElementById('dropdown');
         const logoutBtn = this.shadowRoot.getElementById('logout-btn');
+        const greetingElement = this.shadowRoot.getElementById('user-greeting');
+        const divider = this.shadowRoot.getElementById('menu-divider');
+
+        // --- MÁGICA 1: Personalizar o nome no menu ---
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            greetingElement.textContent = `Olá, ${userName.split(' ')[0]}!`; // Pega só o primeiro nome
+        }
+
+        // --- MÁGICA 2: Injetar o Painel Admin se for administrador ---
+        const tipoUsuario = localStorage.getItem('tipoUsuario');
+        if (tipoUsuario === 'admin') {
+            const adminItem = document.createElement('a');
+            adminItem.href = '/public/pages/admin.html'; // Confirme se o caminho do seu admin.html é este ou /public/pages/admin.html
+            adminItem.className = 'dropdown-item admin-item';
+            adminItem.innerHTML = '<i class="fas fa-user-shield"></i> Painel Admin';
+            
+            // Insere o botão de admin logo acima da linha divisória do botão "Sair"
+            dropdown.insertBefore(adminItem, divider);
+        }
 
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -104,6 +129,7 @@ class TripHeader extends HTMLElement {
             }
             localStorage.removeItem('token');
             localStorage.removeItem('userName');
+            localStorage.removeItem('tipoUsuario'); // Importante limpar o cargo ao sair!
             window.location.href = '/public/pages/login.html';
         });
     }
