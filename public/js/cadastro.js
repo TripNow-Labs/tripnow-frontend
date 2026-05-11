@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}/user/createuserverifycode`, {
+            const response = await fetch(`${API_BASE_URL}/user/createuserverify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}/user/createuserverify`, {
+            const response = await fetch(`${API_BASE_URL}/user/createuserverifycode`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

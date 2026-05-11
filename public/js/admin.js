@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+    
+            // 🛡️ O ESCUDO DE SEGURANÇA (Impede o carregamento da tela)
+            // ------------------------------------------------------------------
+            const tipoUsuario = localStorage.getItem('tipoUsuario');
+            const token = localStorage.getItem('token');
+
+            // Se o usuário não for admin, ele é expulso imediatamente para a Home
+            if (!token || tipoUsuario !== 'admin') {
+                console.warn('Tentativa de acesso não autorizada!');
+                window.location.href = '/public/pages/home.html';
+                return; // O 'return' é essencial para impedir que os gráficos abaixo carreguem
+            }
 
             // --- LÓGICA DAS ABAS DO ADMIN ---
             const adminTabs = document.querySelectorAll('.admin-tab-link');
@@ -333,4 +345,40 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Carrega as cidades assim que a página é carregada
             fetchCities();
+
+            async function carregarEstatisticasDashboard() {
+                try {
+                    const token = localStorage.getItem('token');
+                    
+                    // Chamada para a nova rota que você vai criar no backend
+                    const response = await fetch('http://localhost:3333/api/v1/admin/stats', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("Dados recebidos do banco:", data); // Para você ver no console
+                        
+                        // 1. Atualiza os Usuários (Usando o ID que você colocou no HTML)
+                        const userElement = document.getElementById('total-usuarios-real');
+                        if (userElement) {
+                            userElement.textContent = data.total; 
+                        }
+
+                        // 2. Atualiza os Roteiros (O que estava faltando!)
+                        const roteiroElement = document.getElementById('total-roteiros-real');
+                        if (roteiroElement) {
+                            roteiroElement.textContent = data.RoteirosSalvos; 
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar estatísticas reais:", error);
+                }
+            }
+
+            // 3. Não esqueça de chamar a função para ela rodar!
+            carregarEstatisticasDashboard();
         });
