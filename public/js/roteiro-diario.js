@@ -183,6 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         atividadesDoDia.forEach((item, index) => {
             const atracao = item.atracao || {};
+            // Garante um ID único para manipulação do DOM caso o item.id venha indefinido do back-end
+            const itemID = item.id || `idx-${index}`;
+            const idUnico = `${dia}-${itemID}`;
+
+            // Fotos enviadas para esta atividade específica
+            const fotosAtividade = item.fotos || []; 
+            const temFotos = fotosAtividade.length > 0;
+
             const imgUrl = atracao.url_imagem || 'https://images.unsplash.com/photo-1488085061387-422e15b40b18?q=80&w=400&auto=format&fit=crop';
             const categoria = atracao.categoria || 'Lazer';
             const descricao = atracao.descricao ? atracao.descricao.substring(0, 60) + '...' : 'Uma atração imperdível.';
@@ -195,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="timeline-time">
                     <span class="time-text">${item.horario || '08:30'}</span>
                     <span class="duration-text"><i class="far fa-clock"></i> ${item.duracao || '2h'}</span>
-                    ${!isLastItem ? '<div class="timeline-line"></div>' : ''}
                 </div>
 
                 <div class="timeline-content">
@@ -211,11 +218,26 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="action-btn" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-                
-                    ${!isLastItem ? `
-                    <div class="timeline-connector">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>` : ''}
+
+                    <!-- BOTÃO DE EXPANSÃO (Seta isolada) -->
+                    <div class="activity-expand-trigger" style="display: flex; justify-content: flex-end; padding: 10px 5px;">
+                        <i class="fas fa-chevron-down" id="chevron-${idUnico}" style="cursor: pointer; font-size: 16px; transition: 0.3s; color: var(--text-light-muted);" onclick="window.toggleGaleria('${idUnico}', this)"></i>
+                    </div>
+
+                    <!-- Mini-sessão da Galeria (Acordeão) -->
+                    <div id="gallery-container-${idUnico}" class="activity-gallery-wrapper" style="display: none; background: #f9fafb; border-radius: 12px; padding: 15px; border: 1px solid #e5e7eb; margin-bottom: 20px;">
+                        <input type="file" id="file-input-${idUnico}" style="display:none" onchange="window.executarUploadFoto(this, '${idUnico}')">
+                        
+                        <div class="gallery-info-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text-muted); font-size: 14px;">
+                            <span id="photo-count-text-${idUnico}" style="font-weight: 500;">${temFotos ? `${fotosAtividade.length} fotos nesse local` : 'Fotos nesse local'}</span>
+                            <i class="fas fa-image" style="cursor: pointer; font-size: 18px;" title="Adicionar Foto" onclick="document.getElementById('file-input-${idUnico}').click()"></i>
+                        </div>
+                        
+                        <div id="grid-${idUnico}" class="activity-photos-grid" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            ${temFotos ? fotosAtividade.map(url => `<img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">`).join('') : '<p style="font-size: 12px; color: #9ca3af; margin: 0;">Nenhuma foto adicionada ainda.</p>'}
+                        </div>
+                    </div>
+
                 </div>
             `;
             activitiesList.appendChild(card);
@@ -447,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. SIMULAÇÃO OTIMISTA (Interface)
         const novaAtividade = {
-            id: Date.now(),
+            id: 'temp-' + Date.now() + '-' + Math.floor(Math.random() * 1000), // ID único para evitar erros de Accordion
             horario: "08:30",
             duracao: "2h",
             atracao: {
@@ -502,8 +524,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("🕵️‍♂️ RESPOSTA DO BACK-END:", erro);
                 throw new Error(erro.error || erro.message || `Erro HTTP: ${response.status}`);
             }
+            
             console.log(`✅ ${dados.nome} salvo com sucesso!`);
-
         } catch (error) {
 
             console.error("🕵️‍♂️ FALHA AO SALVAR NO BANCO:", error.message);
@@ -536,6 +558,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }).format(date);
         return formatado.charAt(0).toUpperCase() + formatado.slice(1);
     }
+
+    // ==========================================
+    // 8. LÓGICA DE GALERIA E UPLOAD (Global)
+    // ==========================================
+
+    window.toggleGaleria = function(idUnico, elementoSeta) {
+        const panel = document.getElementById(`gallery-container-${idUnico}`);
+        if (!panel) return;
+
+        const isHidden = panel.style.display === 'none';
+        
+        panel.style.display = isHidden ? 'block' : 'none';
+        
+        if (elementoSeta) {
+            if (isHidden) {
+                elementoSeta.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            } else {
+                elementoSeta.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+    };
+
+    window.executarUploadFoto = async function(input, atividadeId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Validação básica do arquivo
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor, selecione um arquivo de imagem válido.');
+            input.value = '';
+            return;
+        }
+
+        // Extrai o ID real do banco (parte após o traço do dia se for o ID composto)
+        const realId = atividadeId.includes('-') ? atividadeId.split('-').pop() : atividadeId;
+        
+        // Se for um item temporário (não salvo no banco ainda), avisa o usuário
+        if (realId.toString().startsWith('temp') || realId.toString().startsWith('idx')) {
+            alert("Por favor, aguarde a sincronização do roteiro antes de adicionar fotos.");
+            input.value = '';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('foto', file);
+
+        try {
+            const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}/fotos`, {
+                method: 'PATCH',
+                credentials: 'include',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const grid = document.getElementById(`grid-${atividadeId}`);
+                
+                if (grid && data.url) {
+                    if (grid.querySelector('p')) {
+                        grid.innerHTML = '';
+                    }
+
+                    const img = document.createElement('img');
+                    img.src = data.url;
+                    img.style = "width: 60px; height: 60px; object-fit: cover; border-radius: 8px;";
+                    grid.appendChild(img);
+
+                    const countText = document.getElementById(`photo-count-text-${atividadeId}`);
+                    if (countText) {
+                        const total = grid.querySelectorAll('img').length;
+                        countText.textContent = `${total} fotos nesse local`;
+                    }
+                    alert("Foto adicionada com sucesso!");
+                }
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                alert(`Erro ao enviar foto: ${errorData.message || 'Falha no servidor'}`);
+            }
+        } catch (error) {
+            console.error("Erro no upload da foto:", error);
+            alert("Erro de conexão ao tentar enviar a foto.");
+        } finally {
+            input.value = '';
+        }
+    };
 
     // Inicia o app
     init();
