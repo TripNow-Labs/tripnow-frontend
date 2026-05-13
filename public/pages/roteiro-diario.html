@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/roteiro-diario.css">
+    <link rel="stylesheet" href="../css/detailsModal.css">
 </head>
 
 <body>
@@ -66,95 +67,8 @@
                 </div>
             </div>
         </div>
-        <div id="details-modal" class="details-modal">
-            <div id="detail-hero" class="details-hero">
-                <div class="details-hero-topbar">
-                    <button id="close-details-btn" class="icon-btn"><i class="fas fa-chevron-left"></i></button>
-                    <div class="topbar-actions">
-                        <button class="icon-btn"><i class="fas fa-share-alt"></i></button>
-                        <button class="icon-btn"><i class="far fa-heart"></i></button>
-                    </div>
-                </div>
-                <div class="details-hero-overlay"></div>
-            </div>
 
-            <div class="details-body">
-                <div class="detail-header-info">
-                    <h2 id="detail-title">Nome da Atração</h2>
-                    <div class="detail-rating-container">
-                        <div id="detail-stars" class="stars-row">
-                        </div>
-                        <span id="detail-rating-text" class="rating-number">(0.0)</span>
-                        <span class="rating-separator">•</span>
-                        <span id="detail-category" class="detail-category-badge">Categoria</span>
-                    </div>
-                </div>
-
-                <div class="detail-action-row">
-                    <div class="action-item"><i class="far fa-heart"></i> Favoritar</div>
-                    <div class="action-item"><i class="fas fa-share-alt"></i> Compartilhar</div>
-                    <div class="action-item" id="btn-abrir-rotas" style="cursor: pointer;">
-                        <i class="fas fa-location-arrow"></i> Rotas
-                    </div>
-                    <div class="action-item highlight"><i class="fas fa-ticket-alt"></i> Ticket</div>
-                </div>
-
-                <section class="detail-section">
-                    <h3>Sobre</h3>
-                    <p id="detail-description">Descrição completa da atração vai entrar aqui...</p>
-                </section>
-
-                <section class="detail-section practical-info">
-                    <h3>Informações Práticas</h3>
-                    <ul class="info-list">
-                        <li>
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div>
-                                <strong>Endereço</strong>
-                                <p id="detail-address">Carregando...</p>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="far fa-clock"></i>
-                            <div>
-                                <strong>Duração Recomendada</strong>
-                                <p id="detail-duration">Carregando...</p>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-money-bill-wave"></i>
-                            <div>
-                                <strong>Ingresso</strong>
-                                <p id="detail-price">Consulte o local</p>
-                            </div>
-                        </li>
-                    </ul>
-                </section>
-            </div>
-
-            <div class="details-sticky-footer">
-                <button id="add-from-details-btn" class="primary-add-btn">
-                    Adicionar ao Roteiro
-                </button>
-            </div>
-        </div>
-
-        <div id="map-modal" class="map-modal">
-            <div class="map-modal-content">
-                <div class="map-header">
-                    <h3 id="map-target-name">Localização</h3>
-                    <button id="close-map-btn" class="close-map-icon">&times;</button>
-                </div>
-                <div class="map-body">
-                    <iframe id="map-iframe" width="100%" height="100%" style="border:0;" allowfullscreen=""
-                        loading="lazy" allow="geolocation" referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
-                </div>
-                <div class="map-footer">
-                    <button id="external-maps-btn" class="secondary-btn">Abrir no App do Maps</button>
-                </div>
-            </div>
-        </div>
+        <details-modal></details-modal>
 
     </main>
 
@@ -163,6 +77,7 @@
     <script src="../js/layout.js"></script>
     <script src="../js/components/tripHeader.js"></script>
     <script src="../js/components/tripFooter.js"></script>
+    <script src="../js/components/detailsModal.js"></script>
     <script src="../js/roteiro-diario.js"></script>
 </body>
 

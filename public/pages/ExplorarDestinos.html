@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar Destinos - TripNow</title>
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Fontes do Google -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+    </style>
+    <!-- CSS Layout global e da página -->
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/explorar-destinos.css">
+    <link rel="stylesheet" href="../css/detailsModal.css"> <!-- Importe o CSS do modal -->
+</head>
+<body>
+    
+    <!-- Componente do Cabeçalho Global -->
+    <trip-header></trip-header>
+
+    <main class="container app-container" style="padding-bottom: 80px;">
+        <!-- Título principal da página que substitui o texto do header antigo -->
+        <div style="padding-top: 20px; margin-bottom: 10px;">
+            <h1 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Explorar Destinos</h1>
+            <p style="font-size: 14px; color: var(--text-muted);">Descubra novos lugares para sua próxima viagem</p>
+        </div>
+
+        <!-- Seção: Cidades Populares -->
+        <section class="section popular-cities-section">
+            <div class="section-header">
+                <h2>Cidades Populares</h2>
+                <a href="#" class="link-see-all">Ver todas</a>
+            </div>
+            <div class="carousel popular-carousel">
+                <p style="padding: 20px; font-size: 14px; color: var(--text-muted); white-space: nowrap;">Carregando destinos populares...</p>
+            </div>
+        </section>
+
+        <!-- Seção: Próximas de Você -->
+        <section class="section nearby-section">
+            <div class="section-header">
+                <h2><i class="far fa-paper-plane"></i> Próximas de Você</h2>
+            </div>
+            
+            <div class="nearby-list">
+                <p style="padding: 20px; font-size: 14px; text-align: center; color: var(--text-muted); width: 100%;">Buscando os melhores destinos e atrações...</p>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Componente do Rodapé Global -->
+    <trip-footer></trip-footer>
+
+    <!-- Modal de Detalhes -->
+    <details-modal></details-modal>
+
+    <!-- JS de layout e dependências -->
+    <script src="../js/layout.js"></script>
+    <script src="../js/components/detailsModal.js"></script>
+    <script src="../js/explorar-destinos.js"></script>
+    <script src="../js/components/tripHeader.js"></script> 
+    <script src="../js/components/tripFooter.js"></script> 
+</body>
+</html>
