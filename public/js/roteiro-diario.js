@@ -37,22 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const attractionsGrid = document.getElementById('attractions-grid');
     const modalTitle = document.getElementById('search-modal-title');
     const resultsCount = document.getElementById('search-results-count');
-    // Detalhes da Atração
-    const detailsModal = document.getElementById('details-modal');
-    const closeDetailsBtn = document.getElementById('close-details-btn');
-    const detailHero = document.getElementById('detail-hero');
-    const detailTitle = document.getElementById('detail-title');
-    const detailCategory = document.getElementById('detail-category');
-    const detailDescription = document.getElementById('detail-description');
-    const addFromDetailsBtn = document.getElementById('add-from-details-btn');
-    const btnAbrirRotas = document.getElementById('btn-abrir-rotas');
-    const mapModal = document.getElementById('map-modal');
-    const mapIframe = document.getElementById('map-iframe');
-    const closeMapBtn = document.getElementById('close-map-btn');
-    const mapTargetName = document.getElementById('map-target-name');
-    const externalMapsBtn = document.getElementById('external-maps-btn');
 
-    let atracaoEmDestaque = null;
 
     // ==========================================
     // 3. INICIALIZAÇÃO E EVENTOS PRINCIPAIS
@@ -64,6 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function attachEventListeners() {
+        document.addEventListener('add-to-route', (e) => {
+            const atracao = e.detail;
+            adicionarAtracaoNoRoteiro(atracao, null);
+        });
+
         // Abrir Modal de Busca
         openModalBtn.addEventListener('click', async () => {
             const r = roteiroData.roteiro;
@@ -308,141 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * Preenche e abre o modal de detalhes (Tela lateral)
      */
     function abrirTelaDeDetalhes(atracao) {
-        atracaoEmDestaque = atracao;
-        // 1. Imagem, Título e Categoria
-        detailHero.style.backgroundImage = `url('${atracao.url_imagem || ''}')`;
-        detailTitle.textContent = atracao.nome;
-        detailCategory.textContent = atracao.categoria || 'Turismo';
-        detailDescription.textContent = atracao.descricao || 'Sem descrição disponível.';
-
-        // 2. Avaliação (Estrelas) - Usando o campo 'avaliacao' do backend
-        const nota = parseFloat(atracao.avaliacao) || 0;
-        const starsContainer = document.getElementById('detail-stars');
-        const ratingText = document.getElementById('detail-rating-text');
-
-        starsContainer.innerHTML = generateStarsHTML(nota);
-        ratingText.textContent = `(${nota.toFixed(1)})`;
-    
-        // 3. Endereço Real
-        document.getElementById('detail-address').textContent = atracao.endereco || 'Endereço não informado';
-
-        // 4. Duração (Vem do campo 'duracao_horas')
-        const duracao = atracao.duracao_horas ? `${atracao.duracao_horas}h recomendadas` : 'Tempo livre';
-        document.getElementById('detail-duration').textContent = duracao;
-
-        // 5. Preço e Gratuidade
-        const priceElement = document.getElementById('detail-price');
-
-        if (atracao.e_gratuito) {
-            priceElement.innerHTML = '<span style="color: #10B981; font-weight: bold;">Gratuito</span>';
-        } else if (atracao.preco) {
-            const moeda = atracao.moeda || 'R$';
-            priceElement.textContent = `${moeda} ${atracao.preco}`;
-        } else {
-            priceElement.textContent = 'Preço sob consulta';
+        const detailsModalComponent = document.querySelector('details-modal');
+        if (detailsModalComponent) {
+            detailsModalComponent.open(atracao);
         }
-
-        // Reseta o botão de adicionar
-        addFromDetailsBtn.textContent = 'Adicionar ao Roteiro';
-        addFromDetailsBtn.style.backgroundColor = 'var(--primary-cyan)';
-        detailsModal.classList.add('open');
     }
-
-    function generateStarsHTML(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-        let html = '';
-        // Estrelas cheias
-        for (let i = 0; i < fullStars; i++) {
-            html += '<i class="fas fa-star"></i>';
-        }
-        // Meia estrela
-        if (hasHalfStar) {
-            html += '<i class="fas fa-star-half-alt"></i>';
-        }
-        // Estrelas vazias
-        for (let i = 0; i < emptyStars; i++) {
-            html += '<i class="far fa-star"></i>';
-        }
-        return html;
-    }
-
-    /**
-     * Evento para FECHAR a tela de detalhes (Botão voltar no canto superior esquerdo)
-     */
-
-    closeDetailsBtn.addEventListener('click', () => {
-        detailsModal.classList.remove('open');
-        atracaoEmDestaque = null;
-    });
-
-    /**
-     * Evento do botão "Adicionar ao Roteiro" dentro da tela de detalhes
-     */
-    addFromDetailsBtn.addEventListener('click', () => {
-        if (!atracaoEmDestaque) return;
-        // Feedback visual no botão gigante
-        addFromDetailsBtn.textContent = '✓ Adicionado';
-        addFromDetailsBtn.disabled = true;
-        addFromDetailsBtn.style.backgroundColor = '#10B981';
-        adicionarAtracaoNoRoteiro(atracaoEmDestaque, null);
-
-        // Fecha a tela de detalhes após um pequeno delay
-        setTimeout(() => {
-            detailsModal.classList.remove('open');
-        }, 800);
-    });
-
-    /**
-     * Evento para abrir o Google Maps traçando a rota do local atual até a atração
-     */
-
-    btnAbrirRotas.addEventListener('click', () => {
-        if (!atracaoEmDestaque) return;
-
-        const destino = (atracaoEmDestaque.latitude && atracaoEmDestaque.longitude)
-            ? `${atracaoEmDestaque.latitude},${atracaoEmDestaque.longitude}`
-            : encodeURIComponent(atracaoEmDestaque.nome);
-        mapTargetName.textContent = `Rota para ${atracaoEmDestaque.nome}`;
-        mapIframe.style.opacity = '0';
-        mapModal.classList.add('active');
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const embedUrl = `https://www.google.com/maps/embed/v1/directions?key=SUA_CHAVE_AQUI&origin=${lat},${lng}&destination=${destino}`;
-                const fallbackUrl = `https://maps.google.com/maps?saddr=${lat},${lng}&daddr=${destino}&output=embed`;
-                mapIframe.src = fallbackUrl;
-                setTimeout(() => { mapIframe.style.opacity = '1'; }, 500);
-            });
-        }
-    });
-
-
-
-    // Função de contingência caso o usuário negue a localização
-    function mostrarMapaFallback(encodedDestino) {
-        // Mostra só o ponto turístico no mapa, sem tentar traçar rota
-        const embedUrl = `https://maps.google.com/maps?q=${encodedDestino}&output=embed`;
-        mapIframe.src = embedUrl;
-        setTimeout(() => { mapIframe.style.opacity = '1'; }, 500);
-    }
-
-    // Fechar o modal do mapa
-    closeMapBtn.addEventListener('click', () => {
-        mapModal.classList.remove('active');
-        mapIframe.src = ''; // Limpa o iframe para parar de carregar
-    });
-
-    // Botão de contingência caso o usuário queira ir para o app real
-    externalMapsBtn.addEventListener('click', () => {
-        const r = roteiroData.roteiro;
-        const termoBusca = `${atracaoEmDestaque.nome}, ${r.cidade?.nome || ''}`;
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(termoBusca)}`, '_blank');
-    });
 
     /**
      * Função centralizada para salvar atração no roteiro (Local + Banco)
@@ -488,10 +348,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderActivities(diaAtualSelecionado);
 
         // Fecha o modal se necessário
-        if (btnElement || detailsModal.classList.contains('open')) {
+        const detailsModalComponent = document.querySelector('details-modal');
+        const detailsModalOpen = detailsModalComponent && detailsModalComponent.querySelector('#details-modal').classList.contains('open');
+
+        if (btnElement || detailsModalOpen) {
             setTimeout(() => {
                 modal.classList.remove('open');
-                detailsModal.classList.remove('open');
+                if (detailsModalComponent) detailsModalComponent.close();
                 document.body.style.overflow = '';
             }, 600);
         }
