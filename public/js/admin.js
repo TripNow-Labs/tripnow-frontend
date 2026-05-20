@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // 🛡️ ESCUDO DE SEGURANÇA (UX Guard — redireciona não-admins imediatamente)
+    // IMPORTANTE: Este é um guard de UX, não de segurança real. A segurança real
+    // está no servidor, que valida o cookie httpOnly em cada requisição protegida.
+    const tipoUsuario = localStorage.getItem('tipoUsuario');
+    if (tipoUsuario !== 'admin') {
+        console.warn('Tentativa de acesso não autorizada ao painel admin.');
+        window.location.href = '/public/pages/home.html';
+        return; // Impede que os gráficos e lógica abaixo sejam carregados
+    }
+
     // --- LÓGICA DAS ABAS DO ADMIN ---
     const adminTabs = document.querySelectorAll('.admin-tab-link');
     const adminContents = document.querySelectorAll('.admin-content-panel');
@@ -37,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const destCtx = document.getElementById('destinationsChart').getContext('2d');
 
         // --- DADOS DO BANCO (Substituir aqui) ---
-        // Futuramente, iremos buscar os dados do banco
         const destinationLabels = ['Paris', 'Tokyo', 'Nova York', 'Roma', 'Bali'];
         const destinationData = [1200, 950, 835, 351, 256];
         // --- Fim dos dados do banco ---
@@ -58,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ];
 
         const destConfig = {
-            type: 'bar', // Gráfico de colunas
+            type: 'bar',
             data: {
                 labels: destinationLabels,
                 datasets: [{
@@ -72,23 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'x', // 'x' para colunas (vertical)
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
+                indexAxis: 'x',
+                plugins: { legend: { display: false } },
                 scales: {
-                    x: {
-                        grid: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#e9ecef',
-                            drawBorder: false
-                        }
-                    }
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#e9ecef', drawBorder: false } }
                 }
             }
         };
@@ -98,18 +95,16 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
         console.warn("Gráfico de Destinos não encontrado ou falhou ao iniciar.", e);
     }
-    // --- [NOVO] LÓGICA DO GRÁFICO (Crescimento Relatórios) ---
+
+    // --- LÓGICA DO GRÁFICO (Crescimento Relatórios) ---
     try {
         const growthCtx = document.getElementById('growthChart').getContext('2d');
 
-        // --- DADOS DO BANCO (Substituir aqui) ---
         const growthLabels = ['Maio', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov'];
         const growthData = [2100, 2200, 2150, 2300, 2450, 2700, 2847];
-        // --- Fim dos dados do banco ---
 
-        // Gradiente verde (baseado nas métricas de resumo)
         const growthGradient = growthCtx.createLinearGradient(0, 0, 0, 250);
-        growthGradient.addColorStop(0, 'rgba(40, 167, 69, 0.3)'); // --admin-icon-green
+        growthGradient.addColorStop(0, 'rgba(40, 167, 69, 0.3)');
         growthGradient.addColorStop(1, 'rgba(40, 167, 69, 0)');
 
         const growthConfig = {
@@ -139,18 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            label: function (context) {
-                                return `Total: ${context.parsed.y}`;
-                            }
+                            label: function (context) { return `Total: ${context.parsed.y}`; }
                         }
                     }
                 },
                 scales: {
                     x: { grid: { display: false } },
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: '#e9ecef', drawBorder: false }
-                    }
+                    y: { beginAtZero: false, grid: { color: '#e9ecef', drawBorder: false } }
                 }
             }
         };
@@ -160,6 +150,33 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
         console.warn("Gráfico de Crescimento (Relatórios) não encontrado ou falhou ao iniciar.", e);
     }
+
+
+    // --- ESTATÍSTICAS REAIS DO DASHBOARD ---
+    // O cookie httpOnly é enviado automaticamente pelo navegador via credentials: 'include'.
+    // Não é necessário (nem seguro) ler o token do localStorage aqui.
+    async function carregarEstatisticasDashboard() {
+        try {
+            const response = await fetch('http://localhost:3333/api/v1/admin/stats', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                const userElement = document.getElementById('total-usuarios-real');
+                if (userElement) userElement.textContent = data.total;
+
+                const roteiroElement = document.getElementById('total-roteiros-real');
+                if (roteiroElement) roteiroElement.textContent = data.RoteirosSalvos;
+            }
+        } catch (error) {
+            console.error("Erro ao carregar estatísticas reais:", error);
+        }
+    }
+
+    carregarEstatisticasDashboard();
 
 
     // --- LÓGICA DE GERENCIAR CIDADES ---
@@ -179,11 +196,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let citiesData = [];
 
     function fetchCities() {
-        if (!citiesListDiv) return; // Só executa se estivermos na página certa
+        if (!citiesListDiv) return;
 
         statusDiv.textContent = 'Carregando cidades...';
-        const token = localStorage.getItem('token');
-        fetch(rawCitiesApiUrl, { credentials: 'include', headers: token ? { 'Authorization': `Bearer ${token}` } : {} })
+
+        // credentials: 'include' envia o cookie httpOnly automaticamente — sem necessidade de Bearer
+        fetch(rawCitiesApiUrl, { credentials: 'include' })
             .then(res => res.json())
             .then(response => {
                 citiesData = response.data;
@@ -197,24 +215,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderCities() {
-        citiesListDiv.innerHTML = '';
+        // replaceChildren() é a forma segura de limpar um elemento (sem innerHTML = '')
+        citiesListDiv.replaceChildren();
+
         if (citiesData.length === 0) {
-            citiesListDiv.innerHTML = '<p>Nenhuma cidade cadastrada.</p>';
+            const p = document.createElement('p');
+            p.textContent = 'Nenhuma cidade cadastrada.'; // textContent nunca interpreta HTML
+            citiesListDiv.appendChild(p);
             return;
         }
+
         citiesData.forEach((city, index) => {
             const cityDiv = document.createElement('div');
-            cityDiv.className = 'city-list-item'; // Nova classe CSS
-            cityDiv.innerHTML = `
-                        <div class="city-info">
-                            <h3>${city.name}</h3>
-                            <small>${city.touristSpots.length} pontos turísticos</small>
-                        </div>
-                        <div class="city-actions">
-                            <button class="btn-secondary edit-btn" data-id="${index}">Editar</button>
-                            <button class="btn-danger delete-btn" data-id="${index}">Excluir</button>
-                        </div>
-                    `;
+            cityDiv.className = 'city-list-item';
+
+            // --- Bloco de informações (dados do banco via textContent — seguro contra XSS) ---
+            const cityInfo = document.createElement('div');
+            cityInfo.className = 'city-info';
+
+            const h3 = document.createElement('h3');
+            h3.textContent = city.name; // textContent escapa qualquer HTML
+
+            const small = document.createElement('small');
+            small.textContent = `${city.touristSpots.length} pontos turísticos`;
+
+            cityInfo.appendChild(h3);
+            cityInfo.appendChild(small);
+
+            // --- Bloco de ações ---
+            const cityActions = document.createElement('div');
+            cityActions.className = 'city-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn-secondary edit-btn';
+            editBtn.dataset.id = index;
+            editBtn.textContent = 'Editar';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-danger delete-btn';
+            deleteBtn.dataset.id = index;
+            deleteBtn.textContent = 'Excluir';
+
+            cityActions.appendChild(editBtn);
+            cityActions.appendChild(deleteBtn);
+
+            cityDiv.appendChild(cityInfo);
+            cityDiv.appendChild(cityActions);
             citiesListDiv.appendChild(cityDiv);
         });
     }
@@ -223,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalTitle.textContent = city ? 'Editar Cidade' : 'Adicionar Nova Cidade';
         cityIdInput.value = index !== undefined ? index : '';
         cityNameInput.value = city ? city.name : '';
-        spotsContainer.innerHTML = '';
+        spotsContainer.replaceChildren();
         if (city && city.touristSpots) {
             city.touristSpots.forEach(spot => addSpotInput(spot));
         }
@@ -238,10 +284,20 @@ document.addEventListener('DOMContentLoaded', function () {
     function addSpotInput(value = '') {
         const spotDiv = document.createElement('div');
         spotDiv.className = 'spot-item';
-        spotDiv.innerHTML = `
-                    <input type="text" value="${value}" placeholder="Nome do Ponto Turístico" required>
-                    <button type="button" class="btn-danger remove-spot-btn">X</button>
-                `;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = value;          // .value nunca interpreta HTML — seguro contra XSS
+        input.placeholder = 'Nome do Ponto Turístico';
+        input.required = true;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-danger remove-spot-btn';
+        removeBtn.textContent = 'X';
+
+        spotDiv.appendChild(input);
+        spotDiv.appendChild(removeBtn);
         spotsContainer.appendChild(spotDiv);
     }
 
@@ -249,8 +305,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!confirm('Tem certeza que deseja limpar o cache?')) return;
         statusDiv.textContent = 'Limpando cache do servidor...';
         statusDiv.style.color = 'blue';
-        const token = localStorage.getItem('token');
-        fetch(clearCacheApiUrl, { method: 'POST', credentials: 'include', headers: token ? { 'Authorization': `Bearer ${token}` } : {} })
+
+        fetch(clearCacheApiUrl, { method: 'POST', credentials: 'include' })
             .then(res => { if (!res.ok) throw new Error('Falha ao limpar o cache.'); return res.json(); })
             .then(data => { statusDiv.textContent = data.message; statusDiv.style.color = 'green'; })
             .catch(err => { statusDiv.textContent = err.message; statusDiv.style.color = 'red'; });
@@ -315,14 +371,11 @@ document.addEventListener('DOMContentLoaded', function () {
         saveAllBtn.addEventListener('click', () => {
             statusDiv.textContent = 'Salvando alterações no servidor...';
             statusDiv.style.color = 'blue';
-            const token = localStorage.getItem('token');
+
             fetch(updateApiUrl, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ curatedCities: citiesData })
             })
                 .then(res => { if (!res.ok) throw new Error('Falha ao salvar no servidor.'); return res.json(); })
@@ -333,4 +386,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Carrega as cidades assim que a página é carregada
     fetchCities();
+
 });

@@ -21,6 +21,7 @@
   "dependencies": {
     "connect-livereload": "^0.6.1",
     "express": "^4.21.0",
+    "helmet": "^8.1.0",
     "livereload": "^0.9.3"
   },
   "devDependencies": {
