@@ -16,13 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterPills = document.querySelectorAll('.filter-pill');
     const nomeRoteiroContainer = document.getElementById('roteiro-nome')?.closest('.form-group');
 
-    if (nomeRoteiroContainer) nomeRoteiroContainer.classList.add('hidden-step');
+    if (nomeRoteiroContainer) nomeRoteiroContainer.classList.add('hidden-step'); // Mantém o campo de nome do roteiro oculto inicialmente
 
-    const hoje = new Date().toISOString().split('T')[0];
-    dataInicioInput.setAttribute('min', hoje);
-    dataInicioInput.addEventListener('change', () => {
-        dataTerminoInput.setAttribute('min', dataInicioInput.value);
-    });
+    // TEMPORARIAMENTE DESATIVADO PARA TESTES DE ROTEIROS CONCLUÍDOS
+    // const hoje = new Date().toISOString().split('T')[0];
+    // dataInicioInput.setAttribute('min', hoje);
+    // dataInicioInput.addEventListener('change', () => {
+    //     dataTerminoInput.setAttribute('min', dataInicioInput.value);
+    // });
 
     // --- 1. CARREGAR A LISTA INICIAL (Curated Cities) ---
     async function loadCuratedCities() {
