@@ -70,6 +70,14 @@
 
         <details-modal></details-modal>
 
+        <!-- Modal para ver foto expandida -->
+        <div id="photo-expansion-modal" class="map-modal" style="z-index: 5000;">
+            <div style="position: relative; max-width: 90%; max-height: 90%;">
+                <button id="close-photo-modal" style="position: absolute; top: -45px; right: 0; background: none; border: none; color: white; font-size: 40px; cursor: pointer;">&times;</button>
+                <img id="expanded-photo" src="" style="max-width: 100%; max-height: 80vh; border-radius: 8px; display: block; margin: auto;">
+            </div>
+        </div>
+
     </main>
 
     <trip-footer></trip-footer>

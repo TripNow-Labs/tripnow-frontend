@@ -21,6 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let roteiroData = null; // Guardará o JSON completo do roteiro
     let diaAtualSelecionado = 1; // Controla a aba atual
 
+    // Helper para gerar o HTML de cada foto na galeria (incluindo botão de excluir)
+    function createPhotoHTML(url, idUnico) {
+        return `
+            <div class="photo-wrapper" style="position: relative; width: 60px; height: 60px;">
+                <img src="${url}" class="photo-item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; cursor: pointer;">
+                <button class="delete-photo-btn" data-photo-url="${url}" data-id-unico="${idUnico}" 
+                        style="position: absolute; top: -5px; right: -5px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;" 
+                        title="Excluir foto">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }
+
     // ==========================================
     // 2. MAPEAMENTO DE ELEMENTOS DO DOM
     // ==========================================
@@ -70,6 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = ''; // Destrava o scroll
         });
 
+        // Fechar Modal de Foto
+        const photoModal = document.getElementById('photo-expansion-modal');
+        if (photoModal) {
+            document.getElementById('close-photo-modal')?.addEventListener('click', () => photoModal.classList.remove('active'));
+            photoModal.addEventListener('click', (e) => {
+                if (e.target === photoModal) photoModal.classList.remove('active');
+            });
+        }
+
         // DELEGAÇÃO DE EVENTOS: Galeria e Upload de Fotos na Lista de Atividades
         activitiesList.addEventListener('click', (e) => {
             const galleryTrigger = e.target.closest('.gallery-trigger');
@@ -83,6 +106,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const idUnico = uploadTrigger.getAttribute('data-id');
                 const fileInput = document.getElementById(`file-input-${idUnico}`);
                 if (fileInput) fileInput.click();
+            }
+
+            // Expansão da foto
+            const photoItem = e.target.closest('.photo-item');
+            if (photoItem) {
+                const modal = document.getElementById('photo-expansion-modal');
+                const img = document.getElementById('expanded-photo');
+                if (modal && img) {
+                    img.src = photoItem.src;
+                    modal.classList.add('active');
+                }
+            }
+
+            // Exclusão da foto
+            const deleteBtn = e.target.closest('.delete-photo-btn');
+            if (deleteBtn) {
+                const url = deleteBtn.getAttribute('data-photo-url');
+                const idUnico = deleteBtn.getAttribute('data-id-unico');
+                if (confirm('Deseja excluir esta foto?')) {
+                    window.excluirFoto(url, idUnico, deleteBtn.parentElement);
+                }
             }
         });
 
@@ -140,13 +184,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderHeader() {
         const r = roteiroData.roteiro;
         const nomeCidade = r.cidade ? r.cidade.nome : 'Destino';
-        tripTitle.textContent = `Roteiro: ${nomeCidade}`;
+        
         const dataInicio = parseDate(r.data_inicio);
         const dataFim = new Date(dataInicio);
         dataFim.setDate(dataFim.getDate() + (r.duracao_dias - 1));
-        const inicioFormatado = formatShortDate(dataInicio);
-        const fimFormatado = formatShortDate(dataFim);
-        tripDates.textContent = `${r.duracao_dias} dias • ${inicioFormatado} - ${fimFormatado}`;
+        dataFim.setHours(0, 0, 0, 0);
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const isConcluido = dataFim < hoje; // Calcula o status
+        roteiroData.roteiro.isConcluido = isConcluido; // Armazena o status no objeto roteiroData
+
+        tripTitle.textContent = isConcluido ? `Concluído: ${nomeCidade}` : `Roteiro: ${nomeCidade}`;
+        
+        // Aplica as cores de status (Azul por padrão, Verde para concluído)
+        tripTitle.style.color = isConcluido ? '#19a30a' : 'var(--primary-cyan)';
+        if (openModalBtn) {
+            openModalBtn.classList.toggle('concluido-active', isConcluido);
+        }
+
+        const inicioFormatado = formatShortDate(dataInicio); // Formata a data de início
+        const fimFormatado = formatShortDate(dataFim); // Formata a data de fim
+        tripDates.textContent = `${r.duracao_dias} dias • ${inicioFormatado} - ${fimFormatado}`; // Atualiza o texto das datas
     }
 
     function renderDayPills() {
@@ -155,14 +215,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 1; i <= duracao; i++) {
             const btn = document.createElement('button');
-            btn.className = `day-pill ${i === 1 ? 'active' : ''}`;
+            btn.classList.add('day-pill');
             btn.textContent = `Dia ${i}`;
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active', 'concluido-active')); // Remove ambas as classes
                 btn.classList.add('active');
+                if (roteiroData.roteiro.isConcluido) { // Se for concluído, adiciona a classe verde
+                    btn.classList.add('concluido-active');
+                }
                 selectDay(i);
             });
-
+            // Aplica a classe 'active' e 'concluido-active' se for o primeiro dia e o roteiro for concluído
+            if (i === 1) {
+                btn.classList.add('active');
+                if (roteiroData.roteiro.isConcluido) {
+                    btn.classList.add('concluido-active');
+                }
+            }
             daysNav.appendChild(btn);
         }
     }
@@ -176,12 +245,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentDayTitle.textContent = formatFullDayDate(dataDiaAtual);
         renderActivities(dia);
+        // Garante que a pílula do dia selecionado tenha o estilo correto
+        const activePill = daysNav.querySelector(`.day-pill:nth-child(${dia})`);
+        if (activePill) {
+            document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active', 'concluido-active'));
+            activePill.classList.add('active');
+            if (roteiroData.roteiro.isConcluido) {
+                activePill.classList.add('concluido-active');
+            }
+        }
     }
 
     function renderActivities(dia) {
         activitiesList.innerHTML = '';
-
         const atividadesDoDia = roteiroData.dias[dia] || [];
+        const isConcluido = roteiroData.roteiro.isConcluido; // Obtém o status do roteiro
 
         if (atividadesDoDia.length === 0) {
             activitiesList.innerHTML = `
@@ -205,16 +283,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const temFotos = fotosAtividade.length > 0;
 
             const imgUrl = atracao.url_imagem || 'https://images.unsplash.com/photo-1488085061387-422e15b40b18?q=80&w=400&auto=format&fit=crop';
-            const categoria = atracao.categoria || 'Lazer';
+            const categoria = atracao.categoria || 'Lazer'; // Categoria da atração
             const descricao = atracao.descricao ? atracao.descricao.substring(0, 60) + '...' : 'Uma atração imperdível.';
-
-            // Verifica se é o último item (para não renderizar a setinha no final)
-            const isLastItem = index === atividadesDoDia.length - 1;
+            
             const card = document.createElement('div');
             card.className = 'timeline-item';
             card.innerHTML = `
+                <!-- Horário e Duração -->
                 <div class="timeline-time">
-                    <span class="time-text">${item.horario || '08:30'}</span>
+                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}">${item.horario || '08:30'}</span>
                     <span class="duration-text"><i class="far fa-clock"></i> ${item.duracao || '2h'}</span>
                 </div>
 
@@ -222,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="activity-card" style="background-image: url('${imgUrl}');">
                         <div class="activity-overlay"></div>
                         <div class="activity-header">
-                            <span class="activity-tag">${categoria}</span>
+                            <span class="activity-tag ${isConcluido ? 'concluido-tag' : ''}">${categoria}</span>
                             <h4 class="activity-name">${atracao.nome || 'Atividade'}</h4>
                         </div>
                         <p class="activity-desc">${descricao}</p>
@@ -231,12 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="action-btn" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-
                     <!-- BOTÃO DE EXPANSÃO (Seta isolada) -->
                     <div class="activity-expand-trigger" style="display: flex; justify-content: flex-end; padding: 10px 5px;">
                         <i class="fas fa-chevron-down gallery-trigger" data-id="${idUnico}" id="chevron-${idUnico}" style="cursor: pointer; font-size: 16px; transition: 0.3s; color: var(--text-light-muted);"></i>
                     </div>
-
                     <!-- Mini-sessão da Galeria (Acordeão) -->
                     <div id="gallery-container-${idUnico}" class="activity-gallery-wrapper" style="display: none; background: #f9fafb; border-radius: 12px; padding: 15px; border: 1px solid #e5e7eb; margin-bottom: 20px;">
                         <input type="file" id="file-input-${idUnico}" class="file-input-trigger" data-id="${idUnico}" style="display:none">
@@ -247,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         
                         <div id="grid-${idUnico}" class="activity-photos-grid" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            ${temFotos ? fotosAtividade.map(url => `<img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">`).join('') : '<p style="font-size: 12px; color: #9ca3af; margin: 0;">Nenhuma foto adicionada ainda.</p>'}
+                            ${temFotos ? fotosAtividade.map(url => createPhotoHTML(url, idUnico)).join('') : '<p style="font-size: 12px; color: #9ca3af; margin: 0;">Nenhuma foto adicionada ainda.</p>'}
                         </div>
                     </div>
 
@@ -499,10 +574,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         grid.innerHTML = '';
                     }
 
-                    const img = document.createElement('img');
-                    img.src = data.url;
-                    img.style = "width: 60px; height: 60px; object-fit: cover; border-radius: 8px;";
-                    grid.appendChild(img);
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = createPhotoHTML(data.url, atividadeId);
+                    grid.appendChild(wrapper.firstElementChild);
 
                     const countText = document.getElementById(`photo-count-text-${atividadeId}`);
                     if (countText) {
@@ -520,6 +594,41 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Erro de conexão ao tentar enviar a foto.");
         } finally {
             input.value = '';
+        }
+    };
+
+    window.excluirFoto = async function(url, atividadeId, wrapperElement) {
+        const realId = atividadeId.includes('-') ? atividadeId.split('-').pop() : atividadeId;
+
+        try {
+            const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}/fotos`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+
+            if (response.ok) {
+                wrapperElement.remove();
+                
+                const grid = document.getElementById(`grid-${atividadeId}`);
+                const countText = document.getElementById(`photo-count-text-${atividadeId}`);
+                if (grid && countText) {
+                    const total = grid.querySelectorAll('.photo-wrapper').length;
+                    if (total === 0) {
+                        grid.innerHTML = '<p style="font-size: 12px; color: #9ca3af; margin: 0;">Nenhuma foto adicionada ainda.</p>';
+                        countText.textContent = 'Fotos nesse local';
+                    } else {
+                        countText.textContent = `${total} fotos nesse local`;
+                    }
+                }
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                alert(`Erro ao excluir foto: ${errorData.message || 'Falha no servidor'}`);
+            }
+        } catch (error) {
+            console.error("Erro na exclusão:", error);
+            alert("Erro de conexão ao tentar excluir a foto.");
         }
     };
 

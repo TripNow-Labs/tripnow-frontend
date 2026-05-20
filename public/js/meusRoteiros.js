@@ -20,32 +20,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0); // Zera hora para comparar apenas o dia
 
-        // 1. Filtragem baseada APENAS na data_inicio
-        const ativos = roteiros.filter(r => {
-            const dataInicio = new Date(r.data_inicio);
-            dataInicio.setHours(0, 0, 0, 0);
-            return dataInicio.getTime() === hoje.getTime(); // Começa hoje?
-        });
+        const ativos = [];
+        const futuros = [];
+        const concluidos = [];
 
-        const futuros = roteiros.filter(r => {
+        roteiros.forEach(r => {
             const dataInicio = new Date(r.data_inicio);
             dataInicio.setHours(0, 0, 0, 0);
-            return dataInicio.getTime() > hoje.getTime(); // Ainda vai começar
-        });
+            
+            const dataFim = new Date(dataInicio);
+            dataFim.setDate(dataFim.getDate() + (r.duracao_dias || 1) - 1);
+            dataFim.setHours(0, 0, 0, 0);
 
-        const concluidos = roteiros.filter(r => {
-            const dataInicio = new Date(r.data_inicio);
-            dataInicio.setHours(0, 0, 0, 0);
-            return dataInicio.getTime() < hoje.getTime(); // Já passou da data de início
+            if (dataFim < hoje) {
+                concluidos.push(r);
+            } else if (dataInicio > hoje) {
+                futuros.push(r);
+            } else {
+                ativos.push(r);
+            }
         });
 
         // 2. Renderização nos containers (IDs que definimos no passo anterior)
-        renderList(ativos, 'container-ativos', 'Nenhum roteiro começando hoje.');
+        renderList(ativos, 'container-ativos', 'Nenhum roteiro em andamento no momento.');
         renderList(futuros, 'container-futuros', 'Você não tem viagens futuras planejadas.');
-        renderList(concluidos, 'container-concluidos', 'Histórico de viagens vazio.');
+        renderList(concluidos, 'container-concluidos', 'Histórico de viagens vazio.', true);
     }
 
-    function renderList(lista, containerId, emptyMessage) {
+    function renderList(lista, containerId, emptyMessage, isConcluido = false) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
 
@@ -55,13 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         lista.forEach(roteiro => {
-            const card = createRouteCard(roteiro);
+            const card = createRouteCard(roteiro, isConcluido);
             container.appendChild(card);
         });
     }
 
     // Função auxiliar para criar o HTML do card (reaproveitando seu código)
-    function createRouteCard(roteiro) {
+    function createRouteCard(roteiro, isConcluido = false) {
         const card = document.createElement('a');
         card.className = 'route-card';
         card.href = `/public/pages/roteiro-diario.html?id=${roteiro.id}`;
@@ -70,13 +72,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const nomeCidade = roteiro.cidade?.nome || 'Cidade';
         const nomePais = roteiro.cidade?.pais?.nome || '';
 
+        const titleColor = 'style="color: #ffffff;"'; // Título do card sempre branco
+        const titlePrefix = isConcluido ? 'Concluído: ' : '';
+
         card.innerHTML = `
             <img src="${imagemCidade}" alt="${nomeCidade}" class="card-bg-image">
             <span class="card-days-badge">${roteiro.duracao_dias} dias</span>
             <div class="card-overlay">
                 <div class="card-content-minimal">
                     <p class="card-location-line">${nomeCidade}, ${nomePais}</p>
-                    <h3 class="card-city-highlight">${nomeCidade}</h3>
+                    <h3 class="card-city-highlight" ${titleColor}>${titlePrefix}${nomeCidade}</h3>
                 </div>
             </div>
         `;

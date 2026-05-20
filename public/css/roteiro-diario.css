@@ -34,7 +34,7 @@ body {
     font-size: 24px;
     font-weight: 800;
     margin: 0 0 8px 0;
-    color: var(--text-dark);
+    color: var(--primary-cyan);
 }
 
 .trip-subtitle {
@@ -476,4 +476,25 @@ body {
     background: var(--bg-white);
     padding: 0 8px;
     font-size: 14px;
+}
+
+/* ============================================================
+   ESTILOS PARA ROTEIROS CONCLUÍDOS (Cor #19a30a)
+   ============================================================ */
+
+/* Horários e Tags */
+.time-text.concluido-text {
+    color: #19a30a !important;
+}
+
+.day-pill.active.concluido-active,
+.activity-tag.concluido-tag,
+.fab-btn.concluido-active {
+    background-color: #19a30a !important;
+    border-color: #19a30a !important;
+    color: white !important;
+}
+
+.fab-btn.concluido-active {
+    box-shadow: 0 8px 24px rgba(25, 163, 10, 0.4) !important;
 }
