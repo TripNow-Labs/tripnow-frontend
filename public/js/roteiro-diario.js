@@ -69,6 +69,29 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.remove('open');
             document.body.style.overflow = ''; // Destrava o scroll
         });
+
+        // DELEGAÇÃO DE EVENTOS: Galeria e Upload de Fotos na Lista de Atividades
+        activitiesList.addEventListener('click', (e) => {
+            const galleryTrigger = e.target.closest('.gallery-trigger');
+            if (galleryTrigger) {
+                const idUnico = galleryTrigger.getAttribute('data-id');
+                window.toggleGaleria(idUnico, galleryTrigger);
+            }
+
+            const uploadTrigger = e.target.closest('.icon-upload-trigger');
+            if (uploadTrigger) {
+                const idUnico = uploadTrigger.getAttribute('data-id');
+                const fileInput = document.getElementById(`file-input-${idUnico}`);
+                if (fileInput) fileInput.click();
+            }
+        });
+
+        activitiesList.addEventListener('change', (e) => {
+            if (e.target.classList.contains('file-input-trigger')) {
+                const idUnico = e.target.getAttribute('data-id');
+                window.executarUploadFoto(e.target, idUnico);
+            }
+        });
     }
 
     // ==========================================
@@ -211,16 +234,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <!-- BOTÃO DE EXPANSÃO (Seta isolada) -->
                     <div class="activity-expand-trigger" style="display: flex; justify-content: flex-end; padding: 10px 5px;">
-                        <i class="fas fa-chevron-down" id="chevron-${idUnico}" style="cursor: pointer; font-size: 16px; transition: 0.3s; color: var(--text-light-muted);" onclick="window.toggleGaleria('${idUnico}', this)"></i>
+                        <i class="fas fa-chevron-down gallery-trigger" data-id="${idUnico}" id="chevron-${idUnico}" style="cursor: pointer; font-size: 16px; transition: 0.3s; color: var(--text-light-muted);"></i>
                     </div>
 
                     <!-- Mini-sessão da Galeria (Acordeão) -->
                     <div id="gallery-container-${idUnico}" class="activity-gallery-wrapper" style="display: none; background: #f9fafb; border-radius: 12px; padding: 15px; border: 1px solid #e5e7eb; margin-bottom: 20px;">
-                        <input type="file" id="file-input-${idUnico}" style="display:none" onchange="window.executarUploadFoto(this, '${idUnico}')">
+                        <input type="file" id="file-input-${idUnico}" class="file-input-trigger" data-id="${idUnico}" style="display:none">
                         
                         <div class="gallery-info-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text-muted); font-size: 14px;">
                             <span id="photo-count-text-${idUnico}" style="font-weight: 500;">${temFotos ? `${fotosAtividade.length} fotos nesse local` : 'Fotos nesse local'}</span>
-                            <i class="fas fa-image" style="cursor: pointer; font-size: 18px;" title="Adicionar Foto" onclick="document.getElementById('file-input-${idUnico}').click()"></i>
+                            <i class="fas fa-image icon-upload-trigger" data-id="${idUnico}" style="cursor: pointer; font-size: 18px;" title="Adicionar Foto"></i>
                         </div>
                         
                         <div id="grid-${idUnico}" class="activity-photos-grid" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -421,15 +444,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = document.getElementById(`gallery-container-${idUnico}`);
         if (!panel) return;
 
-        const isHidden = panel.style.display === 'none';
+        const isHidden = window.getComputedStyle(panel).display === 'none';
         
         panel.style.display = isHidden ? 'block' : 'none';
         
         if (elementoSeta) {
             if (isHidden) {
-                elementoSeta.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                elementoSeta.classList.remove('fa-chevron-down');
+                elementoSeta.classList.add('fa-chevron-up');
             } else {
-                elementoSeta.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                elementoSeta.classList.remove('fa-chevron-up');
+                elementoSeta.classList.add('fa-chevron-down');
             }
         }
     };
