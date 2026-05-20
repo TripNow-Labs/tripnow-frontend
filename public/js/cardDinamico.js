@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- LÓGICA DE AUTH E HEADER ---
     const userName = localStorage.getItem('userName');
     if (!userName) {
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const cName = item.cidade?.nome || item.nome || item.name;
             const pName = item.pais?.nome || item.pais?.name || (typeof item.pais === 'string' ? item.pais : '');
-            
+
             if (!cName) return false;
 
             const uniqueKey = `${cName.trim()}-${pName.trim()}`.toLowerCase();
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (seen.has(uniqueKey)) {
                 return false; // Já vimos essa cidade, ignora (é duplicata)
             }
-            
+
             seen.add(uniqueKey); // Marca como vista
             return true; // É nova, mantém na lista
         });
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCuratedCities() {
         try {
             containerCards.innerHTML = '<p class="loading-text">Carregando destinos incríveis...</p>';
-            
+
             const response = await fetch('http://localhost:3333/api/v1/api/tourist/curated-cities', {
                 credentials: 'include'
             });
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (responseData.cidade || responseData.nome || responseData.name) cities = [responseData];
                 else { for (let key in responseData) { if (Array.isArray(responseData[key])) { cities = responseData[key]; break; } } }
             }
-            
+
             // [FILTRO] Aplica a regra de não repetir
             cities = removeDuplicates(cities);
 
@@ -119,13 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                if(response.status === 404) {
+                if (response.status === 404) {
                     containerCards.innerHTML = '<p class="error-text">Cidade não encontrada. Tente outro nome.</p>';
                     return;
                 }
                 throw new Error('Erro na busca');
             }
-            const result = await response.json();        
+            const result = await response.json();
             let resultsArray = [];
             if (Array.isArray(result)) { resultsArray = result; }
             else if (result && typeof result === 'object') {
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (result.cidade || result.nome || result.name) resultsArray = [result];
                 else { for (let key in result) { if (Array.isArray(result[key])) { resultsArray = result[key]; break; } } }
             }
-            resultsArray = removeDuplicates(resultsArray);  
+            resultsArray = removeDuplicates(resultsArray);
             renderCards(resultsArray, true);
 
         } catch (error) {
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = document.createElement('div');
             card.className = 'city-card';
-            
+
             const objectString = encodeURIComponent(JSON.stringify(fullObject));
 
             card.innerHTML = `
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         containerCards.appendChild(fragment);
 
         document.querySelectorAll('.btn-select-dest').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const data = JSON.parse(decodeURIComponent(this.dataset.cityObject));
                 selectDestination(data);
             });
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('pontosTuristicosDisponiveis', JSON.stringify(cityData.pontos_turisticos));
 
         console.log("Destino salvo:", cityData.cidade.nome);
-        window.location.href = '/public/pages/EscolherDestino.html'; 
+        window.location.href = '/public/pages/EscolherDestino.html';
     }
 
 
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
-        
+
         searchTimeout = setTimeout(() => {
             searchCity(query);
         }, 800);

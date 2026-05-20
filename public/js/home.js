@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function nextImage() {
         if (images.length === 0) return;
-        
+
         // Remove a classe da imagem atual
         images[currentIndex].classList.remove('active');
-        
+
         // Calcula o próximo índice
         currentIndex = (currentIndex + 1) % images.length;
-        
+
         // Adiciona a classe na nova imagem
         images[currentIndex].classList.add('active');
     }
@@ -25,53 +25,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchMyRoutes() {
-    try {
-        const response = await fetch(API_ROTEIROS, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include' // <--- O navegador envia o cookie automaticamente
-        });
+        try {
+            const response = await fetch(API_ROTEIROS, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // <--- O navegador envia o cookie automaticamente
+            });
 
-        if (!response.ok) throw new Error('Erro ao buscar roteiros');
+            if (!response.ok) throw new Error('Erro ao buscar roteiros');
 
-        const responseData = await response.json();
-        
-        // --- EXTRATOR À PROVA DE FALHAS ---
-        // Encontra o array independente de qual chave o Back-end utilizou (data, roteiros, lista...)
-        let roteiros = [];
-        if (Array.isArray(responseData)) { roteiros = responseData; }
-        else if (responseData && typeof responseData === 'object') {
-            roteiros = responseData.data || responseData.roteiros || [];
-            if (roteiros.length === 0) {
-                for (let key in responseData) { if (Array.isArray(responseData[key])) { roteiros = responseData[key]; break; } }
+            const responseData = await response.json();
+
+            // --- EXTRATOR À PROVA DE FALHAS ---
+            // Encontra o array independente de qual chave o Back-end utilizou (data, roteiros, lista...)
+            let roteiros = [];
+            if (Array.isArray(responseData)) { roteiros = responseData; }
+            else if (responseData && typeof responseData === 'object') {
+                roteiros = responseData.data || responseData.roteiros || [];
+                if (roteiros.length === 0) {
+                    for (let key in responseData) { if (Array.isArray(responseData[key])) { roteiros = responseData[key]; break; } }
+                }
             }
+
+            // --- LÓGICA DE FILTRAGEM E LIMITE (ADAPTADA) ---
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const roteirosRelevantes = roteiros
+                .filter(r => {
+                    const dataInicio = new Date(r.data_inicio);
+                    dataInicio.setHours(0, 0, 0, 0);
+                    // Retorna verdadeiro se a data for HOJE ou no FUTURO
+                    return dataInicio >= hoje;
+                })
+                // Ordena os mais próximos primeiro (opcional, mas fica melhor na Home)
+                .sort((a, b) => new Date(a.data_inicio) - new Date(b.data_inicio))
+                // Pega apenas os primeiros 4 resultados
+                .slice(0, 4);
+
+            renderRoutes(roteirosRelevantes);
+
+        } catch (error) {
+            console.error(error);
+            routesContainer.innerHTML = '<p style="text-align: center; color: #d32f2f;">Erro ao carregar roteiros. Tente novamente.</p>';
         }
-
-        // --- LÓGICA DE FILTRAGEM E LIMITE (ADAPTADA) ---
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-
-        const roteirosRelevantes = roteiros
-            .filter(r => {
-                const dataInicio = new Date(r.data_inicio);
-                dataInicio.setHours(0, 0, 0, 0);
-                // Retorna verdadeiro se a data for HOJE ou no FUTURO
-                return dataInicio >= hoje;
-            })
-            // Ordena os mais próximos primeiro (opcional, mas fica melhor na Home)
-            .sort((a, b) => new Date(a.data_inicio) - new Date(b.data_inicio))
-            // Pega apenas os primeiros 4 resultados
-            .slice(0, 4);
-
-        renderRoutes(roteirosRelevantes);
-
-    } catch (error) {
-        console.error(error);
-        routesContainer.innerHTML = '<p style="text-align: center; color: #d32f2f;">Erro ao carregar roteiros. Tente novamente.</p>';
     }
-}
 
     function renderRoutes(roteiros) {
         routesContainer.innerHTML = '';
@@ -89,16 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
 
         roteiros.forEach(roteiro => {
-    const card = document.createElement('a');
-    card.className = 'route-card';
-    card.href = `/public/pages/roteiro-diario.html?id=${roteiro.id}`;
+            const card = document.createElement('a');
+            card.className = 'route-card';
+            card.href = `/public/pages/roteiro-diario.html?id=${roteiro.id}`;
 
-    const imagemCidade = roteiro.cidade?.url_imagem || 'https://via.placeholder.com/400x250?text=Viagem';
-    const nomeCidade = roteiro.cidade?.nome || 'Cidade';
-    const nomePais = roteiro.cidade?.pais?.nome || '';
-    const duracao = roteiro.duracao_dias;
+            const imagemCidade = roteiro.cidade?.url_imagem || 'https://via.placeholder.com/400x250?text=Viagem';
+            const nomeCidade = roteiro.cidade?.nome || 'Cidade';
+            const nomePais = roteiro.cidade?.pais?.nome || '';
+            const duracao = roteiro.duracao_dias;
 
-    card.innerHTML = `
+            card.innerHTML = `
         <img src="${imagemCidade}" alt="${nomeCidade}" class="card-bg-image">
         
         <span class="card-days-badge">${duracao} dias</span>
@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     `;
-    fragment.appendChild(card);
-});
+            fragment.appendChild(card);
+        });
 
         routesContainer.appendChild(fragment);
     }

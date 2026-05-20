@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     const loginButton = document.getElementById('login-button');
     const emailInput = document.getElementById('email');
     const senhaInput = document.getElementById('senha');
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loginButton.addEventListener('click', handleLogin);
-    
+
     senhaInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             handleLogin();

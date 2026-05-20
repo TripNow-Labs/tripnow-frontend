@@ -19,11 +19,14 @@
   },
   "homepage": "https://github.com/Daniiell99e/Projeto_integrador#readme",
   "dependencies": {
+    "connect-livereload": "^0.6.1",
     "express": "^4.21.0",
-    "livereload": "^0.9.3",
-    "connect-livereload": "^0.6.1"
+    "helmet": "^8.1.0",
+    "livereload": "^0.9.3"
   },
   "devDependencies": {
+    "cypress": "^15.14.2",
+    "cypress-mochawesome-reporter": "^4.0.2",
     "nodemon": "^3.1.0"
   }
 }
