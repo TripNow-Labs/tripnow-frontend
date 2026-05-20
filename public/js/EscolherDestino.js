@@ -143,21 +143,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. LÓGICA DE FILTROS (PILLS E BARRA DE BUSCA) ---
     function aplicarFiltro(categoria) {
-        if (categoria === 'Popular') {
-            renderCities(cidadesCuradas); // Mostra tudo
-        } else if (categoria === 'Brasil' || categoria === 'Europa') {
-            // Filtra da lista curada pelo País ou Continente
-            const filtradas = cidadesCuradas.filter(c =>
-                c.pais.toLowerCase() === categoria.toLowerCase() ||
-                c.continente.toLowerCase() === categoria.toLowerCase()
-            );
-            renderCities(filtradas);
-        } else {
-            // Filtro genérico (ex: "Praia" procurando na descrição)
-            const filtradas = cidadesCuradas.filter(c => c.descricao.toLowerCase().includes(categoria.toLowerCase()));
-            renderCities(filtradas);
-        }
+    console.log('Categoria enviada:', categoria);
+
+    categoria = categoria.trim();
+
+    if (categoria.toLowerCase() === 'popular') {
+        buscarAtracoesAPI('popular');
+
+    } else if (categoria === 'Brasil' || categoria === 'Europa') {
+
+        const filtradas = cidadesCuradas.filter(c =>
+            c.pais.toLowerCase() === categoria.toLowerCase() ||
+            c.continente.toLowerCase() === categoria.toLowerCase()
+        );
+
+        renderCities(filtradas);
+
+    } else {
+        buscarAtracoesAPI(categoria);
     }
+}
+        
 
     filterPills.forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -240,6 +246,67 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    // 🔥 NOVA FUNÇÃO - BUSCA NA API POR CATEGORIA
+    async function buscarAtracoesAPI(categoria) {
+    try {
+        containerCards.innerHTML = `
+            <p style="text-align:center; width:100%;">
+                <i class="fas fa-spinner fa-spin"></i> Buscando ${categoria}...
+            </p>
+        `;
+
+        let listaFinal = [];
+
+        if (categoria.toLowerCase() === 'popular') {
+
+            const categorias = ['museu', 'praia', 'restaurante'];
+
+            const requests = categorias.map(cat =>
+                fetch(`${API_BASE}/roteiros/2/sugestoes-atracoes?categoria=${cat}`, {
+                    credentials: 'include'
+                }).then(res => res.json())
+            );
+
+            const resultados = await Promise.all(requests);
+
+            listaFinal = resultados.flat();
+
+        } else {
+
+            const response = await fetch(
+                `${API_BASE}/roteiros/2/sugestoes-atracoes?categoria=${categoria.toLowerCase()}`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Erro');
+
+            listaFinal = await response.json();
+        }
+
+        // 🔥 embaralha
+        listaFinal.sort(() => Math.random() - 0.5);
+
+        const lista = listaFinal.map((item, index) => ({
+            id: `api-${index}`,
+            nome: item.nome || item.name || 'Atração',
+            descricao: item.descricao || item.description || 'Sem descrição',
+            url_imagem: item.url_imagem || item.image || 'https://images.unsplash.com/photo-1488085061387-422e15b40b18?q=80&w=800&auto=format&fit=crop',
+            pais: item.pais || 'Destino',
+            continente: '',
+            moeda: ''
+        }));
+
+        renderCities(lista);
+
+    } catch (error) {
+        console.error(error);
+        containerCards.innerHTML = `
+            <p style="text-align:center; width:100%;">
+                Erro ao buscar ${categoria}.
+            </p>
+        `;
+    }
+}
 
     // Inicia carregando a lista e filtrando 'Brasil'
     loadCuratedCities();

@@ -1,4 +1,34 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
+    
+            // 🛡️ O ESCUDO DE SEGURANÇA (Impede o carregamento da tela)
+            // ------------------------------------------------------------------
+            const tipoUsuario = localStorage.getItem('tipoUsuario');
+            const token = localStorage.getItem('token');
+
+            // Se o usuário não for admin, ele é expulso imediatamente para a Home
+            if (!token || tipoUsuario !== 'admin') {
+                console.warn('Tentativa de acesso não autorizada!');
+                window.location.href = '/public/pages/home.html';
+                return; // O 'return' é essencial para impedir que os gráficos abaixo carreguem
+            }
+
+            // --- LÓGICA DAS ABAS DO ADMIN ---
+            const adminTabs = document.querySelectorAll('.admin-tab-link');
+            const adminContents = document.querySelectorAll('.admin-content-panel');
+
+            adminTabs.forEach(tab => {
+                tab.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    adminTabs.forEach(t => t.classList.remove('active'));
+                    adminContents.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('data-tab');
+                    const targetContent = document.getElementById(targetId);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
 
     // 🛡️ ESCUDO DE SEGURANÇA (UX Guard — redireciona não-admins imediatamente)
     // IMPORTANTE: Este é um guard de UX, não de segurança real. A segurança real
@@ -346,45 +376,43 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target.classList.contains('remove-spot-btn')) {
                 e.target.parentElement.remove();
             }
+            
+            // Carrega as cidades assim que a página é carregada
+            fetchCities();
+
+            async function carregarEstatisticasDashboard() {
+                try {
+                    const token = localStorage.getItem('token');
+                    
+                    // Chamada para a nova rota que você vai criar no backend
+                    const response = await fetch('http://localhost:3333/api/v1/admin/stats', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("Dados recebidos do banco:", data); // Para você ver no console
+                        
+                        // 1. Atualiza os Usuários (Usando o ID que você colocou no HTML)
+                        const userElement = document.getElementById('total-usuarios-real');
+                        if (userElement) {
+                            userElement.textContent = data.total; 
+                        }
+
+                        // 2. Atualiza os Roteiros (O que estava faltando!)
+                        const roteiroElement = document.getElementById('total-roteiros-real');
+                        if (roteiroElement) {
+                            roteiroElement.textContent = data.RoteirosSalvos; 
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar estatísticas reais:", error);
+                }
+            }
+
+            // 3. Não esqueça de chamar a função para ela rodar!
+            carregarEstatisticasDashboard();
         });
-    }
-
-    if (cityForm) {
-        cityForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = cityIdInput.value;
-            const spotInputs = spotsContainer.querySelectorAll('input');
-            const newCityData = {
-                name: cityNameInput.value,
-                touristSpots: Array.from(spotInputs).map(input => input.value).filter(val => val)
-            };
-
-            if (id) { citiesData[id] = newCityData; }
-            else { citiesData.push(newCityData); }
-            renderCities();
-            closeModal();
-        });
-    }
-
-    const saveAllBtn = document.getElementById('save-all-changes-btn');
-    if (saveAllBtn) {
-        saveAllBtn.addEventListener('click', () => {
-            statusDiv.textContent = 'Salvando alterações no servidor...';
-            statusDiv.style.color = 'blue';
-
-            fetch(updateApiUrl, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ curatedCities: citiesData })
-            })
-                .then(res => { if (!res.ok) throw new Error('Falha ao salvar no servidor.'); return res.json(); })
-                .then(() => { statusDiv.textContent = 'Alterações salvas com sucesso!'; statusDiv.style.color = 'green'; })
-                .catch(err => { statusDiv.textContent = err.message; statusDiv.style.color = 'red'; });
-        });
-    }
-
-    // Carrega as cidades assim que a página é carregada
-    fetchCities();
-
-});

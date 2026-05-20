@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +8,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/roteiro-diario.css">
+    <link rel="stylesheet" href="../css/detailsModal.css">
 </head>
+
 <body>
 
     <trip-header></trip-header>
 
     <main class="itinerary-container">
-        
+
         <header class="trip-overview">
             <h1 id="trip-title" class="trip-title">Carregando destino...</h1>
             <p id="trip-dates" class="trip-subtitle">Calculando dias e datas...</p>
         </header>
 
         <nav class="days-navigation" id="days-nav">
-            </nav>
+        </nav>
 
         <section class="daily-content">
             <header class="day-header">
@@ -29,7 +32,7 @@
             </header>
 
             <div id="activities-list" class="activities-container">
-                </div>
+            </div>
 
             <div class="add-btn-container">
                 <button id="add-activity-btn" class="fab-btn" aria-label="Adicionar atividade">
@@ -61,10 +64,12 @@
                 </div>
 
                 <div id="attractions-grid" class="attractions-grid">
-                    </div>
+                </div>
             </div>
         </div>
-        
+
+        <details-modal></details-modal>
+
     </main>
 
     <trip-footer></trip-footer>
@@ -72,6 +77,8 @@
     <script src="../js/layout.js"></script>
     <script src="../js/components/tripHeader.js"></script>
     <script src="../js/components/tripFooter.js"></script>
+    <script src="../js/components/detailsModal.js"></script>
     <script src="../js/roteiro-diario.js"></script>
 </body>
+
 </html>
