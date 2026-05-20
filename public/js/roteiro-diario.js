@@ -312,15 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function adicionarAtracaoNoRoteiro(dados, btnElement) {
 
-        // 1. GARANTIR O TOKEN DIRETO DA FONTE (Sem usar variáveis externas)
-        const currentToken = localStorage.getItem('token');
-
-        if (!currentToken) {
-            alert("Sua sessão expirou. Por favor, faça login novamente.");
-            window.location.href = '/public/index.html';
-            return;
-        }
-
         // 2. FEEDBACK VISUAL INSTANTÂNEO
         if (btnElement) {
             btnElement.classList.add('added');
@@ -375,9 +366,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const response = await fetch(`${API_BASE}/roteiros/${roteiroId}/atracoes`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${currentToken}` // 👈 Usando a variável garantida
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
