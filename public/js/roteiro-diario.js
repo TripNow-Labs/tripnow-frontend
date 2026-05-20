@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
+                body: JSON.stringify({ fotoUrl: url })
             });
 
             if (response.ok) {
