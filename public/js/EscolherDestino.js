@@ -25,6 +25,62 @@ document.addEventListener('DOMContentLoaded', () => {
     //     dataTerminoInput.setAttribute('min', dataInicioInput.value);
     // });
 
+    // --- 0. CONFIGURAÇÃO DO MODAL DE AVISO (Identidade Visual) ---
+    function injectModalStyles() {
+        if (document.getElementById('confirm-modal-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'confirm-modal-styles';
+        style.textContent = `
+            .modal-confirm-overlay {
+                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center;
+                backdrop-filter: blur(2px); transition: opacity 0.3s ease;
+            }
+            .modal-confirm-overlay.active { display: flex; }
+            .modal-confirm-content {
+                background: white; padding: 24px; border-radius: 20px; width: 90%; max-width: 340px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); font-family: 'Roboto', sans-serif;
+                text-align: center;
+            }
+            .modal-confirm-content h3 { margin: 0 0 12px 0; color: #00B4D8; font-size: 18px; font-weight: 800; }
+            .modal-confirm-content p { font-size: 14px; color: #6B7280; line-height: 1.5; margin-bottom: 24px; }
+            .modal-confirm-actions { display: flex; gap: 12px; }
+            .modal-confirm-actions button {
+                flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: filter 0.2s;
+            }
+            .btn-confirm-modal { background: #00B4D8; color: white; }
+            .modal-confirm-actions button:hover { filter: brightness(0.9); }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function abrirModalAviso(titulo, mensagem) {
+        injectModalStyles();
+        let modal = document.getElementById('alert-modal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'alert-modal';
+            modal.className = 'modal-confirm-overlay';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="modal-confirm-content">
+                <h3>${titulo}</h3>
+                <p>${mensagem}</p>
+                <div class="modal-confirm-actions">
+                    <button id="close-alert" class="btn-confirm-modal">Entendido</button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+        const fechar = () => modal.classList.remove('active');
+        modal.querySelector('#close-alert').onclick = fechar;
+        modal.onclick = (e) => { if (e.target === modal) fechar(); };
+    }
+
     // --- 1. CARREGAR A LISTA INICIAL (Curated Cities) ---
     async function loadCuratedCities() {
         try {
@@ -208,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dataTermino = dataTerminoInput.value;
 
                 if (!dataInicio || !dataTermino) {
-                    alert('Por favor, selecione as datas antes de escolher o destino.');
+                    abrirModalAviso('Atenção', 'Por favor, selecione as datas antes de escolher o destino.');
                     return;
                 }
 
@@ -240,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = `/public/pages/roteiro-diario.html?id=${result.roteiroId}`;
 
                 } catch (error) {
-                    alert('Falha ao criar o roteiro.');
+                    abrirModalAviso('Erro', 'Falha ao criar o roteiro.');
                     button.innerHTML = originalText;
                     button.disabled = false;
                 }
