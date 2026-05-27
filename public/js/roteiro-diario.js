@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <!-- Horário e Duração -->
                 <div class="timeline-time">
-                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}" data-label="Início">${item.horario || '08:30'}</span>
+                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}" data-label="Início">${item.horario_inicio || '08:30'}</span>
                     <span class="time-text-end ${isConcluido ? 'concluido-text' : ''}" data-label="Fim">${item.horario_fim || '10:30'}</span>
                 </div>
 
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <p class="activity-desc">${descricao}</p>
                         <div class="activity-actions">
-                            <button class="action-btn edit-time-trigger" data-id="${idUnico}" data-horario="${item.horario || '08:30'}" data-horario-fim="${item.horario_fim || '10:30'}" title="Editar horário"><i class="fas fa-clock"></i></button>
+                            <button class="action-btn edit-time-trigger" data-id="${idUnico}" data-horario="${item.horario_inicio || ''}" data-horario-fim="${item.horario_fim || ''}" title="Editar horário"><i class="fas fa-clock"></i></button>
                             <button class="action-btn delete-activity-trigger" data-id="${idUnico}" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -516,7 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. SIMULAÇÃO OTIMISTA (Interface)
         const novaAtividade = {
             id: 'temp-' + Date.now() + '-' + Math.floor(Math.random() * 1000), // ID único para evitar erros de Accordion
-            horario: "08:30",
+            horario_inicio: "",
+            horario_fim: "",
             duracao: "2h",
             atracao: {
                 nome: dados.nome,
@@ -707,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PATCH',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ horario: novoHorario, horario_fim: novoHorarioFim })
+                body: JSON.stringify({ horario_inicio: novoHorario, horario_fim: novoHorarioFim })
             });
 
             if (response.ok) {
