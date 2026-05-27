@@ -21,13 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let roteiroData = null; // Guardará o JSON completo do roteiro
     let diaAtualSelecionado = 1; // Controla a aba atual
 
+    // Estado para navegação da galeria expandida
+    let currentGalleryPhotos = [];
+    let currentPhotoIndex = 0;
+
+    function updateNavArrows() {
+        const prevBtn = document.getElementById('prev-photo');
+        const nextBtn = document.getElementById('next-photo');
+        if (!prevBtn || !nextBtn) return;
+        
+        // Força a exibição como flex ou esconde completamente
+        prevBtn.style.setProperty('display', currentPhotoIndex > 0 ? 'flex' : 'none', 'important');
+        nextBtn.style.setProperty('display', currentPhotoIndex < currentGalleryPhotos.length - 1 ? 'flex' : 'none', 'important');
+    }
+
     // Helper para gerar o HTML de cada foto na galeria (incluindo botão de excluir)
     function createPhotoHTML(url, idUnico) {
         return `
             <div class="photo-wrapper" style="position: relative; width: 60px; height: 60px;">
                 <img src="${url}" class="photo-item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; cursor: pointer;">
                 <button class="delete-photo-btn" data-photo-url="${url}" data-id-unico="${idUnico}" 
-                        style="position: absolute; top: -5px; right: -5px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;" 
+                        style="position: absolute; top: -5px; right: -5px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center;" 
                         title="Excluir foto">
                     <i class="fas fa-times"></i>
                 </button>
@@ -91,6 +105,38 @@ document.addEventListener('DOMContentLoaded', () => {
             photoModal.addEventListener('click', (e) => {
                 if (e.target === photoModal) photoModal.classList.remove('active');
             });
+
+            // Eventos das setas de navegação
+            const prevBtn = document.getElementById('prev-photo');
+            const nextBtn = document.getElementById('next-photo');
+
+            // Navegação pelo teclado (Setas do computador)
+            document.addEventListener('keydown', (e) => {
+                if (!photoModal.classList.contains('active')) return;
+                if (e.key === 'ArrowLeft') prevBtn?.click();
+                if (e.key === 'ArrowRight') nextBtn?.click();
+                if (e.key === 'Escape') photoModal.classList.remove('active');
+            });
+
+            const navigate = (direction) => {
+                if (direction === 'next' && currentPhotoIndex < currentGalleryPhotos.length - 1) {
+                    currentPhotoIndex++;
+                } else if (direction === 'prev' && currentPhotoIndex > 0) {
+                    currentPhotoIndex--;
+                } else {
+                    return;
+                }
+                const img = document.getElementById('expanded-photo');
+                if (img) img.src = currentGalleryPhotos[currentPhotoIndex];
+                updateNavArrows();
+            };
+
+            if (prevBtn) {
+                prevBtn.onclick = (e) => { e.stopPropagation(); navigate('prev'); };
+            }
+            if (nextBtn) {
+                nextBtn.onclick = (e) => { e.stopPropagation(); navigate('next'); };
+            }
         }
 
         // DELEGAÇÃO DE EVENTOS: Galeria e Upload de Fotos na Lista de Atividades
@@ -99,6 +145,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (galleryTrigger) {
                 const idUnico = galleryTrigger.getAttribute('data-id');
                 window.toggleGaleria(idUnico, galleryTrigger);
+            }
+
+            // Lógica do botão de editar galeria
+            const galleryEditBtn = e.target.closest('.gallery-edit-btn');
+            if (galleryEditBtn) {
+                const idUnico = galleryEditBtn.getAttribute('data-id');
+                const container = document.getElementById(`gallery-container-${idUnico}`);
+                const isEditing = container.classList.toggle('editing-photos');
+                
+                galleryEditBtn.className = isEditing ? 'fas fa-save gallery-edit-btn' : 'fas fa-edit gallery-edit-btn';
+                galleryEditBtn.style.opacity = isEditing ? '1' : '0.6';
+
+                container.querySelectorAll('.delete-photo-btn').forEach(btn => {
+                    btn.style.display = isEditing ? 'flex' : 'none';
+                });
             }
 
             const uploadTrigger = e.target.closest('.icon-upload-trigger');
@@ -114,9 +175,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 const modal = document.getElementById('photo-expansion-modal');
                 const img = document.getElementById('expanded-photo');
                 if (modal && img) {
+                    // Captura todas as fotos da atividade clicada
+                    const grid = photoItem.closest('.activity-photos-grid');
+                    if (grid) {
+                        currentGalleryPhotos = Array.from(grid.querySelectorAll('.photo-item')).map(el => el.src);
+                        currentPhotoIndex = currentGalleryPhotos.indexOf(photoItem.src);
+                    } else {
+                        currentGalleryPhotos = [photoItem.src];
+                        currentPhotoIndex = 0;
+                    }
+
                     img.src = photoItem.src;
                     modal.classList.add('active');
+                    updateNavArrows();
                 }
+            }
+
+            // Botão Editar Horário (Pop-up de relógio)
+            const editTimeBtn = e.target.closest('.edit-time-trigger');
+            if (editTimeBtn) {
+                const idUnico = editTimeBtn.getAttribute('data-id');
+                const horario = editTimeBtn.getAttribute('data-horario');
+                const horarioFim = editTimeBtn.getAttribute('data-horario-fim');
+                abrirModalEdicaoHorario(idUnico, horario, horarioFim);
+            }
+
+            // Botão Excluir Atividade da Timeline
+            const deleteActivityBtn = e.target.closest('.delete-activity-trigger');
+            if (deleteActivityBtn) {
+                const idUnico = deleteActivityBtn.getAttribute('data-id');
+                abrirModalConfirmacao(
+                    'Excluir Atividade',
+                    'Tem certeza que deseja remover esta atividade do seu roteiro?',
+                    () => excluirAtividade(idUnico)
+                );
             }
 
             // Exclusão da foto
@@ -124,9 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (deleteBtn) {
                 const url = deleteBtn.getAttribute('data-photo-url');
                 const idUnico = deleteBtn.getAttribute('data-id-unico');
-                if (confirm('Deseja excluir esta foto?')) {
-                    window.excluirFoto(url, idUnico, deleteBtn.parentElement);
-                }
+                abrirModalConfirmacao(
+                    'Excluir Foto',
+                    'Deseja excluir esta foto permanentemente?',
+                    () => window.excluirFoto(url, idUnico, deleteBtn.parentElement)
+                );
             }
         });
 
@@ -291,8 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <!-- Horário e Duração -->
                 <div class="timeline-time">
-                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}">${item.horario || '08:30'}</span>
-                    <span class="duration-text"><i class="far fa-clock"></i> ${item.duracao || '2h'}</span>
+                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}" data-label="Início">${item.horario || '08:30'}</span>
+                    <span class="time-text-end ${isConcluido ? 'concluido-text' : ''}" data-label="Fim">${item.horario_fim || '10:30'}</span>
                 </div>
 
                 <div class="timeline-content">
@@ -304,8 +398,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <p class="activity-desc">${descricao}</p>
                         <div class="activity-actions">
-                            <button class="action-btn" title="Editar horário"><i class="fas fa-pen"></i></button>
-                            <button class="action-btn" title="Excluir"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn edit-time-trigger" data-id="${idUnico}" data-horario="${item.horario || '08:30'}" data-horario-fim="${item.horario_fim || '10:30'}" title="Editar horário"><i class="fas fa-clock"></i></button>
+                            <button class="action-btn delete-activity-trigger" data-id="${idUnico}" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     <!-- BOTÃO DE EXPANSÃO (Seta isolada) -->
@@ -318,7 +412,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         <div class="gallery-info-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text-muted); font-size: 14px;">
                             <span id="photo-count-text-${idUnico}" style="font-weight: 500;">${temFotos ? `${fotosAtividade.length} fotos nesse local` : 'Fotos nesse local'}</span>
-                            <i class="fas fa-image icon-upload-trigger" data-id="${idUnico}" style="cursor: pointer; font-size: 18px;" title="Adicionar Foto"></i>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <i class="fas fa-edit gallery-edit-btn" data-id="${idUnico}" style="cursor: pointer; font-size: 16px; opacity: 0.6;" title="Editar fotos"></i>
+                                <i class="fas fa-image icon-upload-trigger" data-id="${idUnico}" style="cursor: pointer; font-size: 18px;" title="Adicionar Foto"></i>
+                            </div>
                         </div>
                         
                         <div id="grid-${idUnico}" class="activity-photos-grid" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -512,6 +609,142 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // 8. LÓGICA DE EDIÇÃO DE HORÁRIO
+    // ==========================================
+
+    function abrirModalEdicaoHorario(idUnico, horario, horarioFim) {
+        let modal = document.getElementById('time-edit-modal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'time-edit-modal';
+            modal.className = 'time-edit-modal';
+            modal.innerHTML = `
+                <div class="time-edit-content">
+                    <h3>Defina o horário</h3>
+                    <div class="edit-field">
+                        <label>Horário de Início</label>
+                        <input type="time" id="edit-horario">
+                    </div>
+                    <div class="edit-field">
+                        <label>Horário de Término</label>
+                        <input type="time" id="edit-horario-fim">
+                    </div>
+                    <div class="edit-modal-actions">
+                        <button id="cancel-time-edit" class="btn-cancel">Cancelar</button>
+                        <button id="save-time-edit" class="save-time-btn">Salvar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Eventos do Modal (apenas na criação)
+            modal.querySelector('#cancel-time-edit').onclick = () => modal.classList.remove('active');
+            modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+            
+            modal.querySelector('#save-time-edit').onclick = async () => {
+                const saveBtn = modal.querySelector('#save-time-edit');
+                const targetId = saveBtn.getAttribute('data-id');
+                const novoHorario = document.getElementById('edit-horario').value;
+                const novoHorarioFim = document.getElementById('edit-horario-fim').value;
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Salvando...';
+                
+                const sucesso = await atualizarHorarioAtividade(targetId, novoHorario, novoHorarioFim);
+                
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Salvar';
+                
+                if (sucesso) modal.classList.remove('active');
+            };
+        }
+
+        // Preenche os campos com os valores atuais
+        document.getElementById('edit-horario').value = horario;
+        document.getElementById('edit-horario-fim').value = horarioFim;
+        document.getElementById('save-time-edit').setAttribute('data-id', idUnico);
+        modal.classList.add('active');
+    }
+
+    function abrirModalConfirmacao(titulo, mensagem, onConfirm) {
+        let modal = document.getElementById('confirm-modal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'confirm-modal';
+            modal.className = 'time-edit-modal'; // Reaproveita o overlay do modal de horário
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="time-edit-content">
+                <h3>${titulo}</h3>
+                <p>${mensagem}</p>
+                <div class="edit-modal-actions">
+                    <button id="cancel-confirm" style="background: #f3f4f6;">Cancelar</button>
+                    <button id="execute-confirm" class="save-time-btn confirm-delete-btn">Excluir</button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+
+        // Eventos
+        modal.querySelector('#cancel-confirm').onclick = () => modal.classList.remove('active');
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+        
+        modal.querySelector('#execute-confirm').onclick = () => {
+            onConfirm();
+            modal.classList.remove('active');
+        };
+    }
+
+    async function atualizarHorarioAtividade(idUnico, novoHorario, novoHorarioFim) {
+        const realId = idUnico.split('-').pop(); // Extrai o ID do banco
+        try {
+            const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}`, {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ horario: novoHorario, horario_fim: novoHorarioFim })
+            });
+
+            if (response.ok) {
+                // Recarrega o roteiro para atualizar a interface com os novos dados
+                await loadRoteiro(); 
+                return true;
+            }
+            alert("Erro ao atualizar o horário no servidor.");
+            return false;
+        } catch (error) {
+            console.error("Erro na atualização:", error);
+            return false;
+        }
+    }
+
+    async function excluirAtividade(idUnico) {
+        const realId = idUnico.split('-').pop(); // Extrai o ID do banco de dados
+        try {
+            const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                // Recarrega o roteiro para refletir a remoção
+                await loadRoteiro();
+            } else {
+                const erro = await response.json().catch(() => ({}));
+                alert(`Erro ao excluir atividade: ${erro.message || 'Falha no servidor'}`);
+            }
+        } catch (error) {
+            console.error("Erro na exclusão da atividade:", error);
+            alert("Erro de conexão ao tentar excluir a atividade.");
+        }
+    }
+
+    // ==========================================
     // 8. LÓGICA DE GALERIA E UPLOAD (Global)
     // ==========================================
 
@@ -576,7 +809,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const wrapper = document.createElement('div');
                     wrapper.innerHTML = createPhotoHTML(data.url, atividadeId);
-                    grid.appendChild(wrapper.firstElementChild);
+                    const newPhoto = wrapper.firstElementChild;
+
+                    // Se a galeria estiver em modo de edição, mostra o X da nova foto imediatamente
+                    const container = document.getElementById(`gallery-container-${atividadeId}`);
+                    if (container && container.classList.contains('editing-photos')) {
+                        newPhoto.querySelector('.delete-photo-btn').style.display = 'flex';
+                    }
+                    grid.appendChild(newPhoto);
 
                     const countText = document.getElementById(`photo-count-text-${atividadeId}`);
                     if (countText) {
