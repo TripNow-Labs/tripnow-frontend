@@ -30,34 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-    // 🛡️ ESCUDO DE SEGURANÇA (UX Guard — redireciona não-admins imediatamente)
-    // IMPORTANTE: Este é um guard de UX, não de segurança real. A segurança real
-    // está no servidor, que valida o cookie httpOnly em cada requisição protegida.
-    const tipoUsuario = localStorage.getItem('tipoUsuario');
-    if (tipoUsuario !== 'admin') {
-        console.warn('Tentativa de acesso não autorizada ao painel admin.');
-        window.location.href = '/public/pages/home.html';
-        return; // Impede que os gráficos e lógica abaixo sejam carregados
-    }
-
-    // --- LÓGICA DAS ABAS DO ADMIN ---
-    const adminTabs = document.querySelectorAll('.admin-tab-link');
-    const adminContents = document.querySelectorAll('.admin-content-panel');
-
-    adminTabs.forEach(tab => {
-        tab.addEventListener('click', function (event) {
-            event.preventDefault();
-            adminTabs.forEach(t => t.classList.remove('active'));
-            adminContents.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            const targetId = this.getAttribute('data-tab');
-            const targetContent = document.getElementById(targetId);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-        });
-    });
-
     // --- LÓGICA DO GRÁFICO (Usuários) ---
     try {
         const ctx = document.getElementById('userChart').getContext('2d');
@@ -376,43 +348,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.classList.contains('remove-spot-btn')) {
                 e.target.parentElement.remove();
             }
-            
-            // Carrega as cidades assim que a página é carregada
-            fetchCities();
-
-            async function carregarEstatisticasDashboard() {
-                try {
-                    const token = localStorage.getItem('token');
-                    
-                    // Chamada para a nova rota que você vai criar no backend
-                    const response = await fetch('http://localhost:3333/api/v1/admin/stats', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log("Dados recebidos do banco:", data); // Para você ver no console
-                        
-                        // 1. Atualiza os Usuários (Usando o ID que você colocou no HTML)
-                        const userElement = document.getElementById('total-usuarios-real');
-                        if (userElement) {
-                            userElement.textContent = data.total; 
-                        }
-
-                        // 2. Atualiza os Roteiros (O que estava faltando!)
-                        const roteiroElement = document.getElementById('total-roteiros-real');
-                        if (roteiroElement) {
-                            roteiroElement.textContent = data.RoteirosSalvos; 
-                        }
-                    }
-                } catch (error) {
-                    console.error("Erro ao carregar estatísticas reais:", error);
-                }
-            }
-
-            // 3. Não esqueça de chamar a função para ela rodar!
-            carregarEstatisticasDashboard();
         });
+    }
+
+    // Carrega as cidades assim que a página é carregada
+    fetchCities();
+});

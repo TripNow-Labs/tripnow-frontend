@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const senhaInput = document.getElementById('senha');
     const errorMessage = document.getElementById('error-message');
 
-    // Variáveis de estado para o 2FA
     let is2FAMode = false;
     let currentUserId = null;
 
@@ -17,10 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.textContent = '';
         loginButton.disabled = true;
         
-        // SE ESTIVERMOS NO MODO 2FA (Digitando o código do Admin)
         if (is2FAMode) {
             loginButton.textContent = 'Validando Código...';
-            const codigo = senhaInput.value; // Reaproveitamos o input de senha para o código
+            const codigo = senhaInput.value; 
             
             try {
                 const response = await fetch(API_2FA_URL, {
@@ -40,10 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 showError('Erro de conexão ao validar código.');
             }
-            return; // Interrompe aqui para não rodar o login normal
+            return; 
         }
 
-        // SE FOR O LOGIN NORMAL (Email e Senha)
         loginButton.textContent = 'Entrando...';
         const email = emailInput.value;
         const senha = senhaInput.value;
@@ -64,25 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.status === 200) {
-                // Turista normal: Login aprovado direto
                 finalizarLogin(data);
 
             } else if (response.status === 202) {
-                // Admin: Recebeu 202! Transforma a tela para pedir o código
                 is2FAMode = true;
                 currentUserId = data.userId;
                 
-                // Esconde o email e muda o input de senha para receber o código
                 emailInput.style.display = 'none';
                 senhaInput.value = '';
                 senhaInput.type = 'text';
                 senhaInput.placeholder = 'Digite o código de 6 dígitos';
                 
-                // Limpa o cookie velho do navegador por segurança
                 document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                 
-                showError('Código enviado para o e-mail (e terminal). Digite abaixo:');
-                // Altera a cor do erro para verde para parecer um aviso amigável
+                showError('Código enviado para o e-mail. Digite abaixo:');
                 errorMessage.style.color = '#15ADE5'; 
             } else {
                 showError(data.error || data.message || 'Credenciais inválidas.');

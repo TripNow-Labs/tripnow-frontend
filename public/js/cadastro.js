@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- ELEMENTOS DO DOM ---
     const formCadastro = document.getElementById('form-cadastro');
     const formVerification = document.getElementById('form-verification');
 
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackMessage = document.getElementById('feedback-message');
     const emailDisplay = document.getElementById('email-display');
 
-    // Inputs
     const nameInput = document.getElementById('name');
     const userNameInput = document.getElementById('user_name');
     const emailInput = document.getElementById('input-email');
@@ -18,12 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPassInput = document.getElementById('input-confirm-password');
     const codeInput = document.getElementById('code');
 
-    // URL base da API do seu backend (com o prefixo /api/v1)
     const API_BASE_URL = 'http://localhost:3333/api/v1';
 
-    // --- FUNÇÕES UTILITÁRIAS ---
-
-    // Exibe mensagens de erro ou sucesso
     const showMessage = (msg, type = 'error') => {
         feedbackMessage.textContent = msg;
         feedbackMessage.style.display = 'block';
@@ -35,13 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackMessage.style.display = 'none';
     };
 
-    // Validador de E-mail com Regex
     const isValidEmail = (email) => {
         const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         return re.test(String(email).toLowerCase());
     };
 
-    // --- LÓGICA DOS ÍCONES DE SENHA ---
     document.querySelectorAll('.toggle-password').forEach(icon => {
         icon.addEventListener('click', function () {
             const targetId = this.getAttribute('data-target');
@@ -50,16 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (input.type === 'password') {
                 input.type = 'text';
                 this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash'); // Muda para olho cortado
+                this.classList.add('fa-eye-slash'); 
             } else {
                 input.type = 'password';
                 this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye'); // Muda para olho normal
+                this.classList.add('fa-eye'); 
             }
         });
     });
 
-    // --- ETAPA 1: ENVIAR DADOS DO CADASTRO ---
     formCadastro.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearMessage();
@@ -119,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- VERIFICAÇÃO DO CÓDIGO ---
     formVerification.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearMessage();
@@ -144,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 alert('Conta verificada com sucesso! Você será redirecionado para o login.');
-                // Redireciona para a tela de login (index.html na raiz public)
                 window.location.href = 'login.html';
             } else {
                 showMessage(data.error || data.message || 'Código inválido ou expirado.');

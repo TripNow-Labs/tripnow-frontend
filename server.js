@@ -25,7 +25,7 @@ app.use(
                     "'self'",
                     'https://cdn.jsdelivr.net',     // Chart.js
                     'https://cdnjs.cloudflare.com', // Font Awesome JS (se usado)
-                    ...(isDev ? ["'unsafe-inline'"] : []),
+                    ...(isDev ? ["'unsafe-inline'", "http://localhost:35729"] : []),
                 ],
 
                 // Estilos: Font Awesome usa inline styles internamente via CSS
@@ -78,11 +78,22 @@ app.use(
         // Impede que páginas abertas via window.open() acessem o objeto window desta página.
         crossOriginOpenerPolicy: { policy: 'same-origin' },
 
+        // Removido o COEP (require-corp) pois ele bloqueia imagens de terceiros (TripAdvisor, Geoapify, etc)
+        // crossOriginEmbedderPolicy: { policy: 'require-corp' },
+        crossOriginEmbedderPolicy: false,
+
         // 3. X-FRAME-OPTIONS — segunda camada anti-clickjacking (compatibilidade com browsers antigos).
         // 'deny' é mais restritivo que 'sameorigin': bloqueia iframe em qualquer origem.
         frameguard: { action: 'deny' },
     })
 );
+
+// Middlewares de Segurança Adicionais (não inclusos no padrão do helmet)
+app.use((req, res, next) => {
+    // Permissions-Policy
+    res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+    next();
+});
 
 // --- Configuração do LiveReload (apenas em dev) ---
 if (isDev) {
@@ -98,9 +109,20 @@ if (isDev) {
     app.use(connectLivereload());
 }
 
+// Configuração de Cache para arquivos estáticos
+const staticOptions = {
+    setHeaders: (res, path) => {
+        if (path.match(/\.(css|js|png|jpg|jpeg|gif|ico)$/)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        } else {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        }
+    }
+};
+
 // Serve arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), staticOptions));
+app.use('/public', express.static(path.join(__dirname, 'public'), staticOptions));
 
 // --- Rotas Específicas ---
 app.get('/', (req, res) => {
