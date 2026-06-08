@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. COMUNICAÇÃO COM A API (BACK-END)
     // ==========================================
 
-    async function loadRoteiro() {
+    async function loadRoteiro(diaSelecionado = 1) {
         try {
             const response = await fetch(`${API_BASE}/roteiros/${roteiroId}`, {
                 credentials: 'include'
@@ -246,7 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
             roteiroData = await response.json();
             renderHeader();
             renderDayPills();
-            selectDay(1); // Seleciona o primeiro dia por padrão
+            const totalDias = roteiroData.roteiro.duracao_dias || 1;
+            selectDay(Math.min(diaSelecionado, totalDias)); // Seleciona o dia indicado ou o primeiro por padrao
         } catch (error) {
             console.error(error);
             tripTitle.textContent = "Erro ao carregar roteiro";
@@ -352,7 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderActivities(dia) {
         activitiesList.innerHTML = '';
-        const atividadesDoDia = roteiroData.dias[dia] || [];
+        const atividadesDoDia = ordenarAtividadesPorHorario(roteiroData.dias[dia] || []);
+        roteiroData.dias[dia] = atividadesDoDia;
         const isConcluido = roteiroData.roteiro.isConcluido; // Obtém o status do roteiro
 
         if (atividadesDoDia.length === 0) {
@@ -369,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         atividadesDoDia.forEach((item, index) => {
             const atracao = item.atracao || {};
             // Garante um ID único para manipulação do DOM caso o item.id venha indefinido do back-end
-            const itemID = item.id || `idx-${index}`;
+            const itemID = obterIdAtividade(item) || `idx-${index}`;
             const idUnico = `${dia}-${itemID}`;
 
             // Fotos enviadas para esta atividade específica
@@ -380,13 +382,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const categoria = atracao.categoria || 'Lazer'; // Categoria da atração
             const descricao = atracao.descricao ? atracao.descricao.substring(0, 60) + '...' : 'Uma atração imperdível.';
             
+            const horarioInicio = obterHorarioInicio(item);
+            const horarioFim = obterHorarioFim(item);
+
             const card = document.createElement('div');
             card.className = 'timeline-item';
+            card.style.order = horarioParaMinutos(horarioInicio);
             card.innerHTML = `
                 <!-- Horário e Duração -->
                 <div class="timeline-time">
-                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}" data-label="Início">${item.horario_inicio || '08:30'}</span>
-                    <span class="time-text-end ${isConcluido ? 'concluido-text' : ''}" data-label="Fim">${item.horario_fim || '10:30'}</span>
+                    <span class="time-text ${isConcluido ? 'concluido-text' : ''}" data-label="Início">${horarioInicio}</span>
+                    <span class="time-text-end ${isConcluido ? 'concluido-text' : ''}" data-label="Fim">${horarioFim}</span>
                 </div>
 
                 <div class="timeline-content">
@@ -398,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <p class="activity-desc">${descricao}</p>
                         <div class="activity-actions">
-                            <button class="action-btn edit-time-trigger" data-id="${idUnico}" data-horario="${item.horario_inicio || ''}" data-horario-fim="${item.horario_fim || ''}" title="Editar horário"><i class="fas fa-clock"></i></button>
+                            <button class="action-btn edit-time-trigger" data-id="${idUnico}" data-horario="${horarioInicio}" data-horario-fim="${horarioFim}" title="Editar horário"><i class="fas fa-clock"></i></button>
                             <button class="action-btn delete-activity-trigger" data-id="${idUnico}" title="Excluir"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -427,6 +433,114 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             activitiesList.appendChild(card);
         });
+    }
+
+    function ordenarAtividadesPorHorario(atividades) {
+        return [...atividades].sort((a, b) => {
+            const diferencaHorario = horarioParaMinutos(obterHorarioInicio(a)) - horarioParaMinutos(obterHorarioInicio(b));
+
+            if (diferencaHorario !== 0) return diferencaHorario;
+            return String(obterIdAtividade(a) || '').localeCompare(String(obterIdAtividade(b) || ''));
+        });
+    }
+
+    function horarioParaMinutos(horario) {
+        const horarioNormalizado = normalizarHorario(horario, null);
+        if (!horarioNormalizado) return Number.MAX_SAFE_INTEGER;
+
+        const [horas, minutos] = horarioNormalizado.split(':').map(Number);
+
+        return (horas * 60) + minutos;
+    }
+
+    function obterHorarioInicio(item) {
+        return normalizarHorario(item.horario_inicio
+            || item.horarioInicio
+            || item.hora_inicio
+            || item.horaInicio
+            || item.horario
+            || item.hora, '08:30');
+    }
+
+    function obterHorarioFim(item) {
+        return normalizarHorario(item.horario_fim
+            || item.horarioFim
+            || item.hora_fim
+            || item.horaFim
+            || item.horario_final
+            || item.horarioFinal, '10:30');
+    }
+
+    function normalizarHorario(horario, fallback = '08:30') {
+        if (!horario) return fallback;
+
+        const valor = String(horario).trim();
+        const match = valor.match(/(?:^|[T\s])(\d{1,2}):(\d{2})/)
+            || valor.match(/^(\d{1,2})h(?:(\d{2}))?/i);
+
+        if (!match) return fallback;
+
+        const horas = Number(match[1]);
+        const minutos = Number(match[2] || 0);
+
+        if (
+            Number.isNaN(horas)
+            || Number.isNaN(minutos)
+            || horas < 0
+            || horas > 23
+            || minutos < 0
+            || minutos > 59
+        ) {
+            return fallback;
+        }
+
+        return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+    }
+
+    function obterIdAtividade(item) {
+        return item.atividade_id
+            || item.id_atividade
+            || item.atividadeRoteiroId
+            || item.roteiroAtividadeId
+            || item.roteiroDiaAtividadeId
+            || item.diaAtividadeId
+            || item.roteiro_atividade_id
+            || item.id_roteiro_atividade
+            || item.roteiro_dia_atividade_id
+            || item.id_roteiro_dia_atividade
+            || item.dia_atividade_id
+            || item.id_dia_atividade
+            || item.roteiroAtracaoId
+            || item.roteiroDiaAtracaoId
+            || item.diaAtracaoId
+            || item.roteiro_atracao_id
+            || item.id_roteiro_atracao
+            || item.roteiro_dia_atracao_id
+            || item.id_roteiro_dia_atracao
+            || item.dia_atracao_id
+            || item.id_dia_atracao
+            || item.roteiroAtividade?.id
+            || item.roteiro_atividade?.id
+            || item.roteiroDiaAtividade?.id
+            || item.roteiro_dia_atividade?.id
+            || item.diaAtividade?.id
+            || item.dia_atividade?.id
+            || item.roteiroAtracao?.id
+            || item.roteiro_atracao?.id
+            || item.roteiroDiaAtracao?.id
+            || item.roteiro_dia_atracao?.id
+            || item.diaAtracao?.id
+            || item.dia_atracao?.id
+            || item.atividade?.id
+            || item.id;
+    }
+
+    function extrairIdReal(idComposto) {
+        const valor = String(idComposto || '');
+        const matchComDia = valor.match(/^\d+-(.+)$/);
+
+        if (matchComDia) return matchComDia[1];
+        return valor;
     }
 
     // ==========================================
@@ -702,18 +816,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function atualizarHorarioAtividade(idUnico, novoHorario, novoHorarioFim) {
-        const realId = idUnico.split('-').pop(); // Extrai o ID do banco
+        const realId = extrairIdReal(idUnico); // Extrai o ID do banco
+        const horarioInicioNormalizado = normalizarHorario(novoHorario, novoHorario);
+        const horarioFimNormalizado = normalizarHorario(novoHorarioFim, novoHorarioFim);
+
         try {
             const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}`, {
                 method: 'PATCH',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ horario_inicio: novoHorario, horario_fim: novoHorarioFim })
+                body: JSON.stringify({ horario_inicio: horarioInicioNormalizado, horario_fim: horarioFimNormalizado })
             });
 
             if (response.ok) {
-                // Recarrega o roteiro para atualizar a interface com os novos dados
-                await loadRoteiro(); 
+                const atividadesDoDia = roteiroData.dias[diaAtualSelecionado] || [];
+                const atividadeAtualizada = atividadesDoDia.find(item => String(obterIdAtividade(item)) === String(realId));
+
+                if (atividadeAtualizada) {
+                    atividadeAtualizada.horario_inicio = horarioInicioNormalizado;
+                    atividadeAtualizada.horarioInicio = horarioInicioNormalizado;
+                    atividadeAtualizada.hora_inicio = horarioInicioNormalizado;
+                    atividadeAtualizada.horaInicio = horarioInicioNormalizado;
+                    atividadeAtualizada.horario = horarioInicioNormalizado;
+                    atividadeAtualizada.hora = horarioInicioNormalizado;
+                    atividadeAtualizada.horario_fim = horarioFimNormalizado;
+                    atividadeAtualizada.horarioFim = horarioFimNormalizado;
+                    atividadeAtualizada.hora_fim = horarioFimNormalizado;
+                    atividadeAtualizada.horaFim = horarioFimNormalizado;
+                    renderActivities(diaAtualSelecionado);
+                } else {
+                    await loadRoteiro(diaAtualSelecionado);
+                }
+
                 return true;
             }
             alert("Erro ao atualizar o horário no servidor.");
@@ -725,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function excluirAtividade(idUnico) {
-        const realId = idUnico.split('-').pop(); // Extrai o ID do banco de dados
+        const realId = extrairIdReal(idUnico); // Extrai o ID do banco de dados
         try {
             const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}`, {
                 method: 'DELETE',
@@ -780,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Extrai o ID real do banco (parte após o traço do dia se for o ID composto)
-        const realId = atividadeId.includes('-') ? atividadeId.split('-').pop() : atividadeId;
+        const realId = extrairIdReal(atividadeId);
         
         // Se for um item temporário (não salvo no banco ainda), avisa o usuário
         if (realId.toString().startsWith('temp') || realId.toString().startsWith('idx')) {
@@ -839,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.excluirFoto = async function(url, atividadeId, wrapperElement) {
-        const realId = atividadeId.includes('-') ? atividadeId.split('-').pop() : atividadeId;
+        const realId = extrairIdReal(atividadeId);
 
         try {
             const response = await fetch(`${API_BASE}/roteiros/atividades/${realId}/fotos`, {
